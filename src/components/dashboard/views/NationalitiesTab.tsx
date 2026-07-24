@@ -5,7 +5,7 @@ import { Globe2, TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
 import { AdmissionRecord, SortDir, sortGroups, sortByScore, meanOf, aggregateRecords } from "@/types";
 import { GenderBadge, AccentCell, ScoreCells, ScoreCards, EmptyState } from "../../ui";
 
-export default function TabMinimum({ data, sortDir }: { data: AdmissionRecord[]; sortDir: SortDir }) {
+export default function NationalitiesTab({ data, sortDir }: { data: AdmissionRecord[]; sortDir: SortDir }) {
   const grouped = useMemo(() => {
     const map = new Map<string, AdmissionRecord[]>();
     data.forEach((r) => {
@@ -61,17 +61,17 @@ export default function TabMinimum({ data, sortDir }: { data: AdmissionRecord[];
                 <th>الجنس</th>
                 <th>
                   <span className="flex items-center gap-1">
-                    <TrendingUp className="w-3.5 h-3.5" /> الأعلى
-                  </span>
-                </th>
-                <th>
-                  <span className="flex items-center gap-1">
                     <TrendingDown className="w-3.5 h-3.5" /> الأدنى
                   </span>
                 </th>
                 <th>
                   <span className="flex items-center gap-1">
-                    <BarChart3 className="w-3.5 h-3.5" /> المتوسط
+                    <BarChart3 className="w-3.5 h-3.5" /> مقياس النزعة
+                  </span>
+                </th>
+                <th>
+                  <span className="flex items-center gap-1">
+                    <TrendingUp className="w-3.5 h-3.5" /> الأعلى
                   </span>
                 </th>
               </tr>
@@ -83,7 +83,7 @@ export default function TabMinimum({ data, sortDir }: { data: AdmissionRecord[];
                   <td style={{ color: "var(--text-muted)" }}>{i + 1}</td>
                   <td className="font-semibold">
                     <span className="flex items-center gap-2">
-                      <Globe2 className="w-4 h-4 text-green-700" />
+                      <Globe2 className="w-4 h-4" style={{ color: "var(--color-primary)" }} />
                       {entry.nationality}
                     </span>
                   </td>
@@ -133,17 +133,17 @@ export default function TabMinimum({ data, sortDir }: { data: AdmissionRecord[];
               <th>الجنس</th>
               <th>
                 <span className="flex items-center gap-1">
-                  <TrendingUp className="w-3.5 h-3.5" /> الأعلى
-                </span>
-              </th>
-              <th>
-                <span className="flex items-center gap-1">
                   <TrendingDown className="w-3.5 h-3.5" /> الأدنى
                 </span>
               </th>
               <th>
                 <span className="flex items-center gap-1">
-                  <BarChart3 className="w-3.5 h-3.5" /> المتوسط
+                  <BarChart3 className="w-3.5 h-3.5" /> مقياس النزعة
+                </span>
+              </th>
+              <th>
+                <span className="flex items-center gap-1">
+                  <TrendingUp className="w-3.5 h-3.5" /> الأعلى
                 </span>
               </th>
             </tr>
@@ -156,7 +156,7 @@ export default function TabMinimum({ data, sortDir }: { data: AdmissionRecord[];
                   {ei === 0 && (
                     <td rowSpan={entries.length} className="align-top pt-4 font-semibold">
                       <span className="flex items-center gap-2">
-                        <Globe2 className="w-4 h-4 text-green-700" />
+                        <Globe2 className="w-4 h-4" style={{ color: "var(--color-primary)" }} />
                         {nationality}
                       </span>
                     </td>
@@ -173,7 +173,7 @@ export default function TabMinimum({ data, sortDir }: { data: AdmissionRecord[];
       <div className="md:hidden space-y-3 animate-tab-content">
         {natEntries.map(([nationality, entries]) => (
           <div key={nationality} className="mobile-card">
-            <h4 className="text-sm font-bold mb-3 flex items-center gap-2" style={{ color: "var(--olive-700)" }}>
+            <h4 className="text-sm font-bold mb-3 flex items-center gap-2" style={{ color: "var(--color-primary)" }}>
               🌍 {nationality}
             </h4>
             <div className="space-y-3">

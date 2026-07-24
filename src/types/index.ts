@@ -1,4 +1,4 @@
-import { Building2, Globe2, Minimize2, EyeOff } from "lucide-react";
+import { Building2, Globe2, Minimize2, EyeOff, GitBranch, Share2, BookOpen, Users } from "lucide-react";
 
 export interface AdmissionRecord {
   campus: string;
@@ -28,10 +28,10 @@ export interface FilterOpts {
 }
 
 export const TABS = [
-  { id: "campus", label: "فروع الجامعة", icon: Building2 },
-  { id: "nationality", label: "الجنسيات", icon: Globe2 },
-  { id: "minimum", label: "أدنى موزونة", icon: Minimize2 },
-  { id: "no-nationality", label: "الموزونات العامة", icon: EyeOff },
+  { id: "majors-nationalities", label: "التخصصات ← الجنسيات", icon: GitBranch },
+  { id: "nationalities-majors", label: "الجنسيات ← التخصصات", icon: Share2 },
+  { id: "nationalities", label: "الجنسيات", icon: Globe2 },
+  { id: "majors", label: "التخصصات", icon: BookOpen },
 ] as const;
 
 export type TabId = (typeof TABS)[number]["id"];
@@ -75,6 +75,8 @@ export function aggregateRecords(records: AdmissionRecord[]): AggregatedRecord {
 export function fmt(score: number): string {
   return score.toFixed(3);
 }
+
+export const fmtScore = fmt;
 
 export function normalizeArabic(text: string): string {
   return text

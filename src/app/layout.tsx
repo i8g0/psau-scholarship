@@ -39,15 +39,15 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;600;700;800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
           rel="stylesheet"
         />
       </head>
       <body
         className="min-h-full flex flex-col antialiased"
-        style={{ fontFamily: "'Tajawal', system-ui, sans-serif" }}
+        style={{ fontFamily: "'IBM Plex Sans Arabic', system-ui, sans-serif" }}
       >
-        {/* Apply dark mode before hydration to avoid a light-mode flash for returning users */}
+        {/* Apply dark mode before hydration to avoid flash for returning users */}
         <script
           dangerouslySetInnerHTML={{
             __html: `try{if(localStorage.getItem("psau-dark-mode")==="true"){document.documentElement.classList.add("dark")}}catch(e){}`,

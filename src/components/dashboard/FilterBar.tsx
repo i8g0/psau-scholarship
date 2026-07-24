@@ -26,6 +26,7 @@ interface FilterBarProps {
   majors: string[];
   nationalities: string[];
   genderCounts: Record<string, number>;
+  activeTab: TabId;
 }
 
 export default function FilterBar({
@@ -49,6 +50,7 @@ export default function FilterBar({
   majors,
   nationalities,
   genderCounts,
+  activeTab,
 }: FilterBarProps) {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -65,25 +67,30 @@ export default function FilterBar({
     { val: "أنثى", label: "♀ أنثى", style: { activeBg: "var(--female-bg)", activeBorder: "var(--female-border)", activeColor: "var(--female-text)" } },
   ];
 
-  interface ActiveFilter {
-    key: 'campus' | 'major' | 'nationality' | 'gender';
-    label: string;
-    onClear: () => void;
-  }
+  // Determine which filters to show based on active tab
+  const showCampusFilter = activeTab === "majors-nationalities" || activeTab === "nationalities-majors" || activeTab === "majors";
+  const showMajorFilter = activeTab === "majors-nationalities" || activeTab === "nationalities-majors" || activeTab === "majors";
+  const showNationalityFilter = activeTab === "majors-nationalities" || activeTab === "nationalities-majors" || activeTab === "nationalities";
+  const showGenderFilter = true; // Always show gender
 
-  const activeFiltersSummary: ActiveFilter[] = [
-    campusFilter && { key: 'campus', label: campusFilter, onClear: () => onCampusFilterChange('') },
-    majorFilter && { key: 'major', label: majorFilter, onClear: () => onMajorFilterChange('') },
-    nationalityFilter && { key: 'nationality', label: nationalityFilter, onClear: () => onNationalityFilterChange('') },
-    genderFilter && { key: 'gender', label: genderFilter, onClear: () => onGenderFilterChange('') },
-  ].filter((f): f is ActiveFilter => Boolean(f));
+  // Reset filters that are not visible for current tab
+  const getVisibleFilters = () => {
+    const filters = [];
+    if (showCampusFilter && campusFilter) filters.push({ key: 'campus', label: campusFilter, onClear: () => onCampusFilterChange('') });
+    if (showMajorFilter && majorFilter) filters.push({ key: 'major', label: majorFilter, onClear: () => onMajorFilterChange('') });
+    if (showNationalityFilter && nationalityFilter) filters.push({ key: 'nationality', label: nationalityFilter, onClear: () => onNationalityFilterChange('') });
+    if (showGenderFilter && genderFilter) filters.push({ key: 'gender', label: genderFilter, onClear: () => onGenderFilterChange('') });
+    return filters;
+  };
+
+  const activeFiltersSummary = getVisibleFilters();
 
   return (
     <div className="space-y-3">
       <div className="card p-3">
         <div className="relative">
           <Search
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5"
+            className="absolute right-14 top-1/2 -translate-y-1/2 w-4.5 h-4.5"
             style={{ color: "var(--text-muted)" }}
           />
           <input
@@ -91,13 +98,13 @@ export default function FilterBar({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="بحث في جميع الحقول..."
-            className="input-field pr-10 pl-10 py-3 min-h-[44px]"
+            className="input-field pr-14 pl-10 py-3 min-h-[44px]"
             style={{ touchAction: "manipulation" }}
           />
           {searchQuery && (
             <button
               onClick={() => onSearchChange("")}
-              className="absolute left-3 top-1/2 -translate-y-1/2 p-1"
+              className="absolute left-4 top-1/2 -translate-y-1/2 p-1"
               style={{ color: "var(--text-muted)", touchAction: "manipulation" }}
             >
               <X className="w-4 h-4" />
@@ -122,7 +129,7 @@ export default function FilterBar({
           {activeFiltersCount > 0 && (
             <span
               className="w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center text-white"
-              style={{ background: "var(--olive-600)" }}
+              style={{ background: "var(--color-primary)" }}
             >
               {activeFiltersCount}
             </span>
@@ -134,7 +141,7 @@ export default function FilterBar({
           <button
             onClick={onClearAllFilters}
             className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
-            style={{ color: "var(--score-low)", touchAction: "manipulation" }}
+            style={{ color: "var(--color-danger)", touchAction: "manipulation" }}
           >
             مسح الكل ✕
           </button>
@@ -143,80 +150,88 @@ export default function FilterBar({
 
       <div className={`card p-4 ${showFilters ? "block" : "hidden md:block"}`}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
-          <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>
-              الفرع
-            </label>
-            <SearchableSelect
-              options={campuses}
-              value={campusFilter}
-              onChange={onCampusFilterChange}
-              placeholder="جميع الفروع"
-              icon={MapPin}
-              counts={genderCounts}
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>
-              التخصص
-            </label>
-            <SearchableSelect
-              options={majors}
-              value={majorFilter}
-              onChange={onMajorFilterChange}
-              placeholder="جميع التخصصات"
-              icon={BookOpen}
-              counts={genderCounts}
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>
-              الجنسية
-            </label>
-            <SearchableSelect
-              options={nationalities}
-              value={nationalityFilter}
-              onChange={onNationalityFilterChange}
-              placeholder="جميع الجنسيات"
-              icon={Globe2}
-              counts={genderCounts}
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>
-              الجنس
-            </label>
-            <div className="flex gap-2">
-              {genderOptions.map((opt) => (
-                <button
-                  key={opt.val}
-                  onClick={() => onGenderFilterChange(genderFilter === opt.val ? "" : opt.val)}
-                  className="flex-1 py-2.5 px-3 rounded-xl text-sm font-medium transition-all min-h-[44px]"
-                  style={{
-                    background:
-                      genderFilter === opt.val
-                        ? opt.style.activeBg || "var(--olive-100)"
-                        : "var(--bg-input)",
-                    border: `1px solid ${
-                      genderFilter === opt.val
-                        ? opt.style.activeBorder || "var(--olive-300)"
-                        : "var(--border-default)"
-                    }`,
-                    color:
-                      genderFilter === opt.val
-                        ? opt.style.activeColor || "var(--olive-800)"
-                        : "var(--text-secondary)",
-                    touchAction: "manipulation",
-                  }}
-                >
-                  {opt.label}
-                </button>
-              ))}
+          {showCampusFilter && (
+            <div>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>
+                الفرع
+              </label>
+              <SearchableSelect
+                options={campuses}
+                value={campusFilter}
+                onChange={onCampusFilterChange}
+                placeholder="جميع الفروع"
+                icon={MapPin}
+                counts={genderCounts}
+              />
             </div>
-          </div>
+          )}
+
+          {showMajorFilter && (
+            <div>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>
+                التخصص
+              </label>
+              <SearchableSelect
+                options={majors}
+                value={majorFilter}
+                onChange={onMajorFilterChange}
+                placeholder="جميع التخصصات"
+                icon={BookOpen}
+                counts={genderCounts}
+              />
+            </div>
+          )}
+
+          {showNationalityFilter && (
+            <div>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>
+                الجنسية
+              </label>
+              <SearchableSelect
+                options={nationalities}
+                value={nationalityFilter}
+                onChange={onNationalityFilterChange}
+                placeholder="جميع الجنسيات"
+                icon={Globe2}
+                counts={genderCounts}
+              />
+            </div>
+          )}
+
+          {showGenderFilter && (
+            <div>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>
+                الجنس
+              </label>
+              <div className="flex gap-2">
+                {genderOptions.map((opt) => (
+                  <button
+                    key={opt.val}
+                    onClick={() => onGenderFilterChange(genderFilter === opt.val ? "" : opt.val)}
+                    className="flex-1 py-2.5 px-3 rounded-xl text-sm font-medium transition-all min-h-[44px]"
+                    style={{
+                      background:
+                        genderFilter === opt.val
+                          ? opt.style.activeBg || "var(--color-primary)"
+                          : "var(--bg-input)",
+                      border: `1px solid ${
+                        genderFilter === opt.val
+                          ? opt.style.activeBorder || "var(--color-primary)"
+                          : "var(--border-default)"
+                      }`,
+                      color:
+                        genderFilter === opt.val
+                          ? opt.style.activeColor || "#ffffff"
+                          : "var(--text-secondary)",
+                      touchAction: "manipulation",
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>
@@ -234,12 +249,14 @@ export default function FilterBar({
           <div className="hidden md:flex items-center gap-2 mt-3 pt-3" style={{ borderTop: "1px solid var(--border-light)" }}>
             <span className="text-xs" style={{ color: "var(--text-muted)" }}>فلاتر نشطة:</span>
             {activeFiltersSummary.map((filter) => {
-              const getBadgeStyle = (key: string) => {
+              const getBadgeStyle = (key: string): React.CSSProperties => {
                 switch (key) {
-                  case 'campus': return { background: "var(--olive-100)", color: "var(--olive-800)", border: "1px solid var(--olive-200)" };
-                  case 'major': return { background: "var(--beige-200)", color: "var(--beige-800)", border: "1px solid var(--beige-400)" };
-                  case 'nationality': return { background: "rgba(8,145,178,0.1)", color: "#0891b2", border: "1px solid rgba(8,145,178,0.3)" };
-                  case 'gender': return `${genderFilter === "ذكر" ? "badge-male" : "badge-female"}`;
+                  case 'campus': return { background: "rgba(0,119,188,0.1)", color: "var(--color-primary)", border: "1px solid rgba(0,119,188,0.2)" };
+                  case 'major': return { background: "rgba(0,152,102,0.1)", color: "var(--color-secondary)", border: "1px solid rgba(0,152,102,0.2)" };
+                  case 'nationality': return { background: "rgba(0,119,188,0.1)", color: "var(--color-primary)", border: "1px solid rgba(0,119,188,0.2)" };
+                  case 'gender': return genderFilter === "ذكر" 
+                    ? { background: "var(--male-badge)", color: "var(--male-text)", border: "1px solid var(--male-border)" }
+                    : { background: "var(--female-badge)", color: "var(--female-text)", border: "1px solid var(--female-border)" };
                   default: return {};
                 }
               };
@@ -248,7 +265,7 @@ export default function FilterBar({
                 <span
                   key={filter.key}
                   className="badge text-xs"
-                  style={getBadgeStyle(filter.key) as any}
+                  style={getBadgeStyle(filter.key)}
                 >
                   {filter.label}
                   <button onClick={filter.onClear} className="mr-1"><X className="w-3 h-3" /></button>
@@ -258,7 +275,7 @@ export default function FilterBar({
             <button
               onClick={onClearAllFilters}
               className="text-xs font-medium px-2 py-1 rounded-md mr-auto transition-colors"
-              style={{ color: "var(--score-low)", touchAction: "manipulation" }}
+              style={{ color: "var(--color-danger)", touchAction: "manipulation" }}
             >
               مسح الكل
             </button>

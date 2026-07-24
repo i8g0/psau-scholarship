@@ -12,12 +12,7 @@ interface HeaderProps {
 
 export default function Header({ onRefresh, refreshing, onToggleDarkMode, darkMode }: HeaderProps) {
   return (
-    <header
-      className="glass-header py-4 px-4 md:px-6"
-      style={{
-        borderBottom: "1px solid rgba(255,255,255,0.08)",
-      }}
-    >
+    <header className="glass-header py-4 px-4 md:px-6" style={{ borderBottom: "1px solid var(--border-default)" }}>
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Image
@@ -30,25 +25,22 @@ export default function Header({ onRefresh, refreshing, onToggleDarkMode, darkMo
           />
           <div>
             <div className="flex items-center gap-2.5">
-              <h1 className="text-base md:text-lg font-bold text-white">
+              <h1 className="text-base md:text-lg font-bold" style={{ color: "var(--text-inverse)", fontFamily: "var(--font-display)" }}>
                 إحصائيات موزونات القبول
               </h1>
-              <span
-                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold"
-                style={{
-                  background: "rgba(239, 68, 68, 0.15)",
-                  border: "1px solid rgba(239, 68, 68, 0.3)",
-                  color: "#fca5a5",
-                }}
-              >
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold" style={{
+                background: "rgba(220, 38, 38, 0.15)",
+                border: "1px solid rgba(220, 38, 38, 0.3)",
+                color: "var(--color-danger)",
+              }}>
                 <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500" />
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full" style={{ backgroundColor: "var(--color-danger)", opacity: 0.75 }} />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ backgroundColor: "var(--color-danger)" }} />
                 </span>
                 LIVE
               </span>
             </div>
-            <p className="text-xs text-gray-300/80">
+            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
               جامعة الأمير سطام بن عبدالعزيز – دفعة 2026
             </p>
           </div>
@@ -58,8 +50,11 @@ export default function Header({ onRefresh, refreshing, onToggleDarkMode, darkMo
           <button
             onClick={onRefresh}
             disabled={refreshing}
-            className="p-2 rounded-lg transition-all duration-200 text-white/70 hover:text-white hover:bg-white/10"
-            style={{ touchAction: "manipulation" }}
+            className="p-2 rounded-lg transition-all duration-200" style={{
+              color: "var(--text-inverse)",
+              backgroundColor: "rgba(255,255,255,0.1)",
+              touchAction: "manipulation",
+            }}
             title="تحديث البيانات"
             aria-label="تحديث البيانات"
           >
@@ -68,8 +63,11 @@ export default function Header({ onRefresh, refreshing, onToggleDarkMode, darkMo
 
           <button
             onClick={onToggleDarkMode}
-            className="p-2 rounded-lg transition-all duration-200 text-white/70 hover:text-white hover:bg-white/10"
-            style={{ touchAction: "manipulation" }}
+            className="p-2 rounded-lg transition-all duration-200" style={{
+              color: "var(--text-inverse)",
+              backgroundColor: "rgba(255,255,255,0.1)",
+              touchAction: "manipulation",
+            }}
             title={darkMode ? "وضع فاتح" : "وضع داكن"}
             aria-label={darkMode ? "التبديل للوضع الفاتح" : "التبديل للوضع الداكن"}
           >

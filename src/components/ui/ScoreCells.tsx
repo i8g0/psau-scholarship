@@ -1,6 +1,6 @@
 "use client";
 
-import { fmt } from "@/types";
+import { fmtScore } from "@/types";
 
 interface ScoreCellsProps {
   max: number;
@@ -11,9 +11,9 @@ interface ScoreCellsProps {
 export function ScoreCells({ max, avg, min }: ScoreCellsProps) {
   return (
     <>
-      <td className="score-high">{fmt(max)}</td>
-      <td className="score-low">{fmt(min)}</td>
-      <td className="score-avg">{fmt(avg)}</td>
+      <td className="score-low">{fmtScore(min)}</td>
+      <td className="score-avg">{fmtScore(avg)}</td>
+      <td className="score-high">{fmtScore(max)}</td>
     </>
   );
 }

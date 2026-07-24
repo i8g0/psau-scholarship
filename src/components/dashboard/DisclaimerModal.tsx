@@ -41,7 +41,7 @@ export default function DisclaimerModal({ show, onDismiss }: DisclaimerModalProp
               unoptimized
             />
           </div>
-          <h2 id="disclaimer-title" className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>
+          <h2 id="disclaimer-title" className="text-xl font-bold" style={{ color: "var(--text-primary)", fontFamily: "var(--font-display)" }}>
             ⚠️ تنبيهات مهمة
           </h2>
         </div>
@@ -50,11 +50,11 @@ export default function DisclaimerModal({ show, onDismiss }: DisclaimerModalProp
           <li>جميع النسب المذكورة مجرد اجتهادات من الطلاب وليس لها صلة بالنسب الحقيقية أو أي ضمانات رسمية من الجامعة.</li>
           <li>هذه النسب لا تعطي بالضرورة أدنى نسبة قبولها بالجامعات وإنما مجرد إحصاءات للطلاب المشاركين.</li>
           <li>عدم وجود جنسية في جامعة معينة لا يعني أن الجامعة لا تقبل منها، بل عدم توفر معلومات عنها.</li>
-          <li>عدم وجود تخصص معين في جامعة معينة لا يعني أنه محذوف، بل عدم توفر معلومات عنه <span className="font-medium">(يستثنى من ذلك التخصصات الصحية فهي ممنوعة)</span>.</li>
+          <li>عدم وجود تخصص معين في جامعة معينة لا يعني أنه محذوف، بل عدم توفر معلومات عنه <span className="font-medium" style={{ color: "var(--color-warning)" }}> (يستثنى من ذلك التخصصات الصحية فهي ممنوعة)</span>.</li>
           <li>اطمحوا لأعلى موزونة ممكنة. فالقبول تنافسي ويختلف حسب المقدمين كل عام.</li>
           <li>
             بعض النسب المنخفضة قد لا تعتمد على تفاصل الموزونات لأنها بعيدة عن المتوسط الطبيعي. لا يمكن تفسير هذا إلا أنه{" "}
-            <span className="font-bold" style={{ color: "#d97706" }}>رزق ساقه الله إليهم.</span>{" "}
+            <span className="font-bold" style={{ color: "var(--color-warning)" }}>رزق ساقه الله إليهم.</span>{" "}
             فتوكلوا على الله ولا تيأسوا.
           </li>
           <li>إن أحسنا فمن الله، وإن أسأنا فمن أنفسنا والشيطان.</li>
@@ -62,11 +62,13 @@ export default function DisclaimerModal({ show, onDismiss }: DisclaimerModalProp
 
         <button
           onClick={onDismiss}
-          className="w-full py-3 rounded-xl font-bold text-lg transition-all duration-200 min-h-[48px] text-white"
+          className="w-full py-3 rounded-xl font-bold text-lg transition-all duration-200 min-h-[48px]"
           style={{
-            background: "var(--olive-700)",
-            boxShadow: "0 4px 14px rgba(45, 80, 22, 0.3)",
+            background: "var(--color-primary)",
+            color: "#ffffff",
+            boxShadow: "0 4px 14px rgba(0, 119, 188, 0.3)",
             touchAction: "manipulation",
+            fontFamily: "var(--font-display)",
           }}
         >
           موافق ✓

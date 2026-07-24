@@ -11,24 +11,31 @@ interface StatsBarProps {
 }
 
 const statsConfig = [
-  { icon: Building2, label: "الفروع", value: "campuses", color: "#7c3aed" },
-  { icon: Globe2, label: "الجنسيات", value: "nationalities", color: "#0891b2" },
-  { icon: BookOpen, label: "التخصصات", value: "majors", color: "#c2410c" },
+  { icon: Building2, label: "الفروع", value: "campuses", color: "var(--color-primary)" },
+  { icon: Globe2, label: "الجنسيات", value: "nationalities", color: "var(--color-secondary)" },
+  { icon: BookOpen, label: "التخصصات", value: "majors", color: "var(--color-warning)" },
 ];
 
 export default function StatsBar({ total, campuses, nationalities, majors, loading }: StatsBarProps) {
   return (
-    <div className="grid grid-cols-3 gap-3 animate-slide-up">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-3 animate-slide-up">
+      <div className="card p-4 md:col-span-1">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-xs" style={{ color: "var(--text-muted)" }}>إجمالي السجلات</span>
+        </div>
+        <div className="text-3xl md:text-4xl font-bold" style={{ color: "var(--text-primary)", fontFamily: "var(--font-display)" }}>
+          {loading ? <span className="skeleton inline-block w-16 h-10" /> : total.toLocaleString()}
+        </div>
+      </div>
       {statsConfig.map(({ icon: Icon, label, value, color }) => {
         const count = { campuses, nationalities, majors }[value];
-
         return (
           <div key={label} className="card p-4">
             <div className="flex items-center gap-2 mb-1">
               <Icon className="w-4 h-4" style={{ color }} />
               <span className="text-xs" style={{ color: "var(--text-muted)" }}>{label}</span>
             </div>
-            <div className="text-2xl font-bold" style={{ color }}>
+            <div className="text-2xl md:text-3xl font-bold" style={{ color, fontFamily: "var(--font-display)" }}>
               {loading ? <span className="skeleton inline-block w-10 h-7" /> : count}
             </div>
           </div>

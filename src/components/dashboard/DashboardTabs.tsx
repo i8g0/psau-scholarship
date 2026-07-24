@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from "react";
-import { Search, ChevronDown, X, Filter, Users, Building2, Globe2, TrendingUp, TrendingDown, BarChart3, Moon, Sun, RefreshCw, BookOpen, MapPin, Minimize2, EyeOff, AlertTriangle } from "lucide-react";
+import { Search, ChevronDown, X, Filter, Users, Globe2, TrendingUp, TrendingDown, BarChart3, Moon, Sun, RefreshCw, BookOpen, MapPin, Minimize2, EyeOff, AlertTriangle, GitBranch, Share2 } from "lucide-react";
 import { useAdmissions } from "@/hooks/useAdmissions";
 import { TABS, AdmissionRecord, SortDir, TabId, FilterOpts, normalizeArabic, sortGroups, sortByScore, meanOf, matchesFilters, countBy, fmt, aggregateRecords } from "@/types";
 import { GenderBadge, AccentCell, ScoreCells, ScoreCards, EmptyState } from "@/components/ui";
-import TabByCampus from "@/components/dashboard/views/CampusTab";
-import TabByNationality from "@/components/dashboard/views/NationalityTab";
-import TabMinimum from "@/components/dashboard/views/MinimumTab";
-import TabNoNationality from "@/components/dashboard/views/NoNationalityTab";
+import MajorsNationalitiesTab from "@/components/dashboard/views/MajorsNationalitiesTab";
+import NationalitiesMajorsTab from "@/components/dashboard/views/NationalitiesMajorsTab";
+import NationalitiesTab from "@/components/dashboard/views/NationalitiesTab";
+import MajorsTab from "@/components/dashboard/views/MajorsTab";
 import StatsBar from "@/components/dashboard/StatsBar";
 import FilterBar from "@/components/dashboard/FilterBar";
 import DisclaimerModal from "@/components/dashboard/DisclaimerModal";
@@ -21,7 +21,7 @@ export default function DashboardTabs() {
 
   const [showDisclaimer, setShowDisclaimer] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabId>("campus");
+  const [activeTab, setActiveTab] = useState<TabId>("majors-nationalities");
   const [sortDir, setSortDir] = useState<SortDir>("none");
   const [searchQuery, setSearchQuery] = useState("");
   const [campusFilter, setCampusFilter] = useState("");
@@ -126,6 +126,21 @@ export default function DashboardTabs() {
     }
   }, [showDisclaimer]);
 
+  const getTabComponent = (tabId: TabId) => {
+    switch (tabId) {
+      case "majors-nationalities":
+        return <MajorsNationalitiesTab data={filteredData} sortDir={sortDir} />;
+      case "nationalities-majors":
+        return <NationalitiesMajorsTab data={filteredData} sortDir={sortDir} />;
+      case "nationalities":
+        return <NationalitiesTab data={filteredData} sortDir={sortDir} />;
+      case "majors":
+        return <MajorsTab data={filteredData} sortDir={sortDir} />;
+      default:
+        return <EmptyState loading={false} />;
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--bg-body)" }} dir="rtl">
       <DisclaimerModal show={showDisclaimer} onDismiss={dismissDisclaimer} />
@@ -150,7 +165,7 @@ export default function DashboardTabs() {
           <span>{timeAgo && `آخر تحديث: ${timeAgo}`}</span>
         </div>
 
-        <div className="tab-bar">
+<div className="tab-bar">
           {TABS.map((tab) => {
             const Icon = tab.icon;
             return (
@@ -163,7 +178,7 @@ export default function DashboardTabs() {
                 className={`tab-item ${activeTab === tab.id ? "active" : ""}`}
                 style={{ touchAction: "manipulation" }}
               >
-                <span className="flex items-center justify-center gap-1.5">
+                <span className="flex items-center justify-center gap-1.5 font-arabic">
                   <Icon className="w-4 h-4" />
                   <span className="hidden sm:inline">{tab.label}</span>
                   <span className="sm:hidden text-xs">{tab.label}</span>
@@ -194,6 +209,7 @@ export default function DashboardTabs() {
           majors={majors}
           nationalities={nationalities}
           genderCounts={genderCounts}
+          activeTab={activeTab}
         />
 
         <div key={activeTab}>
@@ -208,12 +224,7 @@ export default function DashboardTabs() {
               ))}
             </div>
           ) : (
-            <>
-              {activeTab === "campus" && <TabByCampus data={filteredData} sortDir={sortDir} />}
-              {activeTab === "nationality" && <TabByNationality data={filteredData} sortDir={sortDir} />}
-              {activeTab === "minimum" && <TabMinimum data={filteredData} sortDir={sortDir} />}
-              {activeTab === "no-nationality" && <TabNoNationality data={filteredData} sortDir={sortDir} />}
-            </>
+            getTabComponent(activeTab)
           )}
         </div>
 

@@ -5,7 +5,7 @@ import { Building2, TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
 import { AdmissionRecord, SortDir, sortGroups, sortByScore, meanOf, aggregateRecords } from "@/types";
 import { GenderBadge, AccentCell, ScoreCells, ScoreCards, EmptyState } from "../../ui";
 
-export default function TabNoNationality({ data, sortDir }: { data: AdmissionRecord[]; sortDir: SortDir }) {
+export default function MajorsTab({ data, sortDir }: { data: AdmissionRecord[]; sortDir: SortDir }) {
   const grouped = useMemo(() => {
     const map = new Map<string, AdmissionRecord[]>();
     data.forEach((r) => {
@@ -74,17 +74,17 @@ export default function TabNoNationality({ data, sortDir }: { data: AdmissionRec
                 <th>الجنس</th>
                 <th>
                   <span className="flex items-center gap-1">
-                    <TrendingUp className="w-3.5 h-3.5" /> الأعلى
-                  </span>
-                </th>
-                <th>
-                  <span className="flex items-center gap-1">
                     <TrendingDown className="w-3.5 h-3.5" /> الأدنى
                   </span>
                 </th>
                 <th>
                   <span className="flex items-center gap-1">
-                    <BarChart3 className="w-3.5 h-3.5" /> المتوسط
+                    <BarChart3 className="w-3.5 h-3.5" /> مقياس النزعة
+                  </span>
+                </th>
+                <th>
+                  <span className="flex items-center gap-1">
+                    <TrendingUp className="w-3.5 h-3.5" /> الأعلى
                   </span>
                 </th>
               </tr>
@@ -135,17 +135,17 @@ export default function TabNoNationality({ data, sortDir }: { data: AdmissionRec
               <th>الجنس</th>
               <th>
                 <span className="flex items-center gap-1">
-                  <TrendingUp className="w-3.5 h-3.5" /> الأعلى
-                </span>
-              </th>
-              <th>
-                <span className="flex items-center gap-1">
                   <TrendingDown className="w-3.5 h-3.5" /> الأدنى
                 </span>
               </th>
               <th>
                 <span className="flex items-center gap-1">
-                  <BarChart3 className="w-3.5 h-3.5" /> المتوسط
+                  <BarChart3 className="w-3.5 h-3.5" /> مقياس النزعة
+                </span>
+              </th>
+              <th>
+                <span className="flex items-center gap-1">
+                  <TrendingUp className="w-3.5 h-3.5" /> الأعلى
                 </span>
               </th>
             </tr>

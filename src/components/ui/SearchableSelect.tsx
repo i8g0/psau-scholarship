@@ -96,9 +96,9 @@ export function SearchableSelect({
           touchAction: "manipulation",
         }}
       >
-        <span className="flex items-center gap-2 truncate">
+        <span className="flex items-center gap-2 truncate pr-8">
           {Icon && <Icon className="w-4 h-4 flex-shrink-0 opacity-50" />}
-          {value || placeholder}
+          <span className="truncate">{value || placeholder}</span>
         </span>
         <ChevronDown
           className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 opacity-50 ${open ? "rotate-180" : ""}`}
