@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+
+# Vercel
+.vercel
+
+# Environment files - NEVER commit these
+.env
+.env.local
+.env*.local
+.env.development
+.env.production
+.env.staging
+
+# Sensitive data files - NEVER commit these
+src/data/scores-26.json
+src/data/admission-scores.json
+src/data/sync-log.json
+data-output.json
+*.csv
+
+# Backup files
+*.backup
+
+# Scripts that handle sensitive data
+extract.js
+
+# OS files
+.DS_Store
+Thumbs.db

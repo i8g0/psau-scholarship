@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none">
+  <!-- Background circle -->
+  <circle cx="200" cy="200" r="195" fill="#1a6b5c"/>
+  
+  <!-- Outer arch -->
+  <path d="M200 30 C100 30, 40 95, 40 180 C40 265, 100 330, 200 330 C300 330, 360 265, 360 180 C360 95, 300 30, 200 30Z" stroke="white" stroke-width="5" fill="none"/>
+  <!-- Arch 2 -->
+  <path d="M200 60 C120 60, 68 110, 68 180 C68 250, 120 300, 200 300 C280 300, 332 250, 332 180 C332 110, 280 60, 200 60Z" stroke="white" stroke-width="4" fill="none"/>
+  <!-- Arch 3 -->
+  <path d="M200 90 C140 90, 95 130, 95 180 C95 230, 140 270, 200 270 C260 270, 305 230, 305 180 C305 130, 260 90, 200 90Z" stroke="white" stroke-width="3" fill="none"/>
+  <!-- Arch 4 -->
+  <path d="M200 120 C160 120, 122 150, 122 180 C122 210, 160 240, 200 240 C240 240, 278 210, 278 180 C278 150, 240 120, 200 120Z" stroke="white" stroke-width="2.5" fill="none"/>
+  
+  <!-- Gradient overlay on arch (white fade) -->
+  <defs>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="white" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <path d="M200 30 C100 30, 40 95, 40 180 C40 265, 100 330, 200 330 C300 330, 360 265, 360 180 C360 95, 300 30, 200 30Z" fill="url(#fade)"/>
+  
+  <!-- دفعة text -->
+  <text x="200" y="210" text-anchor="middle" font-family="'Arial Black', 'Segoe UI', sans-serif" font-weight="900" font-size="36" fill="white">دفعة</text>
+  
+  <!-- 25 number - gold -->
+  <text x="200" y="260" text-anchor="middle" font-family="'Arial Black', 'Segoe UI', sans-serif" font-weight="900" font-size="65" fill="#d4a843">25</text>
+  
+  <!-- سطام text -->
+  <text x="200" y="320" text-anchor="middle" font-family="'Arial Black', 'Segoe UI', sans-serif" font-weight="900" font-size="42" fill="white">سطام</text>
+</svg>
