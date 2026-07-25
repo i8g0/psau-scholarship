@@ -625,6 +625,20 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+.score-high,
+.score-low,
+.score-avg {
+  text-align: center;
+}
+
+.table-container td.score-low,
+.table-container td.score-avg,
+.table-container td.score-high {
+  width: 80px;
+  min-width: 80px;
+  white-space: nowrap;
+}
+
 /* ==========================================
    Group Headers in Tables
    ========================================== */
