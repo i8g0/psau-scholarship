@@ -491,6 +491,15 @@ body {
   color: var(--text-muted);
 }
 
+.input-field-search {
+  padding-right: 56px;
+  padding-left: 40px;
+}
+.dark .input-field-search {
+  padding-right: 56px;
+  padding-left: 40px;
+}
+
 /* ==========================================
    Badge Styles
    ========================================== */

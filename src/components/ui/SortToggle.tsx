@@ -84,6 +84,7 @@ export function SortToggle({
         <div
           className={`dropdown-menu absolute z-[60] w-full animate-fade-in-scale ${dropUp ? "bottom-full mb-1.5" : "top-full mt-1.5"}`}
           role="listbox"
+        >
           {SORT_OPTIONS.map((option) => (
             <button
               key={option.value}
