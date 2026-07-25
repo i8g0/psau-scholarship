@@ -1,7 +1,5 @@
 # PSAU Scholarship — Agent Instructions
 
-CLAUDE.md delegates here.
-
 ## Stack & Commands
 
 Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4 (`@tailwindcss/postcss`), `googleapis`, `lucide-react`, `recharts`.
@@ -74,6 +72,8 @@ Two-mode CSS custom-property system (not Tailwind theme colors):
 
 Components should use: `--bg-body/card/header/input`, `--text-primary/secondary/muted/accent`, `--male/female-accent/text`, `--score-low/avg/high`, `--chip-active-bg/border/text`, `--border-default`.
 
+`tailwind.config.ts` exists but is **vestigial** — Tailwind v4 (`@tailwindcss/postcss`) ignores it. All design tokens live in `globals.css` CSS custom properties.
+
 **Gotcha**: `backdrop-filter` creates a new stacking context. Can trap a child's `z-index` below a sibling that also has `backdrop-filter`. Fix: add `relative z-[some-level]` to the containing card, not by raising the dropdown's own `z-index`.
 
 ### ⚠️ `var(--color-*)` tokens — mostly undefined
@@ -83,6 +83,7 @@ Components should use: `--bg-body/card/header/input`, `--text-primary/secondary/
 ### Known regressions to guard
 - **`.input-field-search`**: Must provide `padding-right: 56px; padding-left: 40px` (RTL). Class was dropped once during a CSS refactor, causing search icon/text overlap in `FilterBar.tsx`.
 - **Smart dropdown direction**: `SearchableSelect.tsx` and `SortToggle.tsx` auto-flip the dropdown upward when space below is insufficient (uses `getBoundingClientRect()`). Don't remove the `dropUp` logic.
+- **Score column widths**: `.table-container td.score-low/.score-avg/.score-high` must keep `width: 80px; min-width: 80px; white-space: nowrap;`. Removed twice during CSS refactors (commits `9a57fbf`, `8ef06c9`), causing uneven gaps between Min/Avg/Max columns.
 
 ## Known Open Issues
 
