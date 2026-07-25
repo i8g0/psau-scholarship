@@ -82,7 +82,7 @@ export default function NationalitiesMajorsTab({ data, sortDir }: { data: Table2
                   <td style={{ color: "var(--text-muted)" }}>{i + 1}</td>
                   <td className="font-semibold">
                     <span className="flex items-center gap-2">
-                      <Globe2 className="w-4 h-4" style={{ color: "var(--color-primary)" }} />
+                      <Globe2 className="w-4 h-4" style={{ color: "var(--text-accent)" }} />
                       {record.nationality}
                     </span>
                   </td>
@@ -114,7 +114,7 @@ export default function NationalitiesMajorsTab({ data, sortDir }: { data: Table2
                     <span className="badge badge-campus text-xs">{record.campus}</span>
                   </div>
                   <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-                    <Globe2 className="w-3 h-3 inline" style={{ color: "var(--color-primary)" }} /> {record.nationality}
+                    <Globe2 className="w-3 h-3 inline" style={{ color: "var(--text-accent)" }} /> {record.nationality}
                   </p>
                   <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
                     {record.major}
@@ -169,7 +169,7 @@ export default function NationalitiesMajorsTab({ data, sortDir }: { data: Table2
                         <td rowSpan={campuses.reduce((s, c) => s + c.totalRows, 0)}
                             className="font-semibold align-top pt-3">
                           <span className="flex items-center gap-2">
-                            <Globe2 className="w-4 h-4" style={{ color: "var(--color-primary)" }} />
+                            <Globe2 className="w-4 h-4" style={{ color: "var(--text-accent)" }} />
                             {nationality}
                           </span>
                         </td>
@@ -216,10 +216,9 @@ export default function NationalitiesMajorsTab({ data, sortDir }: { data: Table2
                   genders.map((record, gi) => (
                     <div
                       key={`${major}-${gi}`}
-                      className="rounded-xl p-3 mb-2"
+                      className="mobile-card mb-2"
                       style={{
-                        background: record.gender === "ذكر" ? "var(--male-bg)" : "var(--female-bg)",
-                        border: `1px solid ${record.gender === "ذكر" ? "var(--male-border)" : "var(--female-border)"}`,
+                        borderRight: `3px solid ${record.gender === "ذكر" ? "var(--male-accent)" : "var(--female-accent)"}`,
                       }}
                     >
                       <div className="flex items-start justify-between mb-1">

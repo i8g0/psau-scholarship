@@ -171,10 +171,9 @@ export default function MajorsTab({ data, sortDir }: { data: Table4Record[]; sor
                 </p>
                 {genders.map((entry, gi) => (
                   <div key={gi}
-                    className="rounded-xl p-3 mb-2 last:mb-0"
+                    className="mobile-card mb-2 last:mb-0"
                     style={{
-                      background: entry.gender === "ذكر" ? "var(--male-bg)" : "var(--female-bg)",
-                      border: `1px solid ${entry.gender === "ذكر" ? "var(--male-border)" : "var(--female-border)"}`,
+                      borderRight: `3px solid ${entry.gender === "ذكر" ? "var(--male-accent)" : "var(--female-accent)"}`,
                     }}
                   >
                     <GenderBadge gender={entry.gender} />

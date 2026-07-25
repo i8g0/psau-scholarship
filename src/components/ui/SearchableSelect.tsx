@@ -24,7 +24,9 @@ export function SearchableSelect({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [highlighted, setHighlighted] = useState(0);
+  const [dropUp, setDropUp] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const listId = useId();
 
@@ -86,8 +88,19 @@ export function SearchableSelect({
   return (
     <div ref={ref} className="relative">
       <button
+        ref={buttonRef}
         type="button"
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          const next = !open;
+          if (next && buttonRef.current) {
+            const rect = buttonRef.current.getBoundingClientRect();
+            const estimatedMenuHeight = 260;
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const spaceAbove = rect.top;
+            setDropUp(spaceBelow < estimatedMenuHeight && spaceAbove > spaceBelow);
+          }
+          setOpen(next);
+        }}
         aria-haspopup="listbox"
         aria-expanded={open}
         className="w-full flex items-center justify-between gap-2 px-3 py-2.5 text-sm rounded-xl transition-all duration-200 min-h-[44px]"
@@ -108,7 +121,7 @@ export function SearchableSelect({
       </button>
       {open && (
         <div
-          className="dropdown-menu absolute z-[60] mt-1.5 w-full animate-fade-in-scale"
+          className={`dropdown-menu absolute z-[60] w-full animate-fade-in-scale ${dropUp ? "bottom-full mb-1.5" : "top-full mt-1.5"}`}
           style={{ minWidth: "200px" }}
           role="listbox"
           id={listId}

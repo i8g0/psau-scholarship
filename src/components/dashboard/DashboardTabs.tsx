@@ -28,6 +28,22 @@ export default function DashboardTabs() {
   const [nationalityFilter, setNationalityFilter] = useState("");
   const [genderFilter, setGenderFilter] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [marqueeVisible, setMarqueeVisible] = useState(true);
+
+  useEffect(() => {
+    const footerEl = document.getElementById("footer-ref");
+    if (!footerEl) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setMarqueeVisible(!entry.isIntersecting);
+      },
+      { threshold: 0 }
+    );
+
+    observer.observe(footerEl);
+    return () => observer.disconnect();
+  }, []);
 
   const dismissDisclaimer = useCallback(() => {
     setShowDisclaimer(false);
@@ -274,7 +290,7 @@ export default function DashboardTabs() {
       </main>
 
       <Footer />
-      <MarqueeBar visible={true} />
+      <MarqueeBar visible={marqueeVisible} />
     </div>
   );
 }

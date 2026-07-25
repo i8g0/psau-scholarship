@@ -146,7 +146,7 @@ export default function FilterBar({
         )}
       </div>
 
-      <div className={`card p-4 ${showFilters ? "block" : "hidden md:block"}`}>
+      <div className={`card p-4 relative z-20 ${showFilters ? "block" : "hidden md:block"}`}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
           {showCampusFilter && (
             <div>
@@ -210,16 +210,16 @@ export default function FilterBar({
                     style={{
                       background:
                         genderFilter === opt.val
-                          ? opt.style.activeBg || "var(--color-primary)"
+                          ? opt.style.activeBg || "var(--chip-active-bg)"
                           : "var(--bg-input)",
                       border: `1px solid ${
                         genderFilter === opt.val
-                          ? opt.style.activeBorder || "var(--color-primary)"
+                          ? opt.style.activeBorder || "var(--chip-active-border)"
                           : "var(--border-default)"
                       }`,
                       color:
                         genderFilter === opt.val
-                          ? opt.style.activeColor || "#ffffff"
+                          ? opt.style.activeColor || "var(--chip-active-text)"
                           : "var(--text-secondary)",
                       touchAction: "manipulation",
                     }}

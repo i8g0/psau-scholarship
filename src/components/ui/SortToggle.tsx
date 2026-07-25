@@ -22,7 +22,9 @@ export function SortToggle({
   label = "ترتيب المجموعات حسب الموزونة",
 }: SortToggleProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [dropUp, setDropUp] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -48,7 +50,18 @@ export function SortToggle({
       </label>
 
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        ref={buttonRef}
+        onClick={() => {
+          const next = !isOpen;
+          if (next && buttonRef.current) {
+            const rect = buttonRef.current.getBoundingClientRect();
+            const estimatedMenuHeight = SORT_OPTIONS.length * 44 + 8;
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const spaceAbove = rect.top;
+            setDropUp(spaceBelow < estimatedMenuHeight && spaceAbove > spaceBelow);
+          }
+          setIsOpen(next);
+        }}
         className="w-full flex items-center justify-between gap-2 px-3 py-2.5 text-sm rounded-xl transition-all duration-200 min-h-[44px]"
         style={{
           background: "var(--bg-input)",
@@ -68,7 +81,9 @@ export function SortToggle({
       </button>
 
       {isOpen && (
-        <div className="dropdown-menu absolute z-[60] mt-1.5 w-full animate-fade-in-scale" role="listbox">
+        <div
+          className={`dropdown-menu absolute z-[60] w-full animate-fade-in-scale ${dropUp ? "bottom-full mb-1.5" : "top-full mt-1.5"}`}
+          role="listbox"
           {SORT_OPTIONS.map((option) => (
             <button
               key={option.value}

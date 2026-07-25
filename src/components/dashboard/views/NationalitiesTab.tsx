@@ -60,9 +60,9 @@ export default function NationalitiesTab({ data, sortDir }: { data: Table3Record
                 <tr key={i}>
                   <AccentCell gender={entry.gender} />
                   <td style={{ color: "var(--text-muted)" }}>{i + 1}</td>
-                  <td className="font-semibold">
-                    <span className="flex items-center gap-2">
-                      <Globe2 className="w-4 h-4" style={{ color: "var(--color-primary)" }} />
+                  <td>
+                    <span className="flex items-center gap-2" style={{ color: "var(--text-primary)", fontWeight: 500 }}>
+                      <Globe2 className="w-4 h-4" style={{ color: "var(--text-accent)" }} />
                       {entry.nationality}
                     </span>
                   </td>
@@ -78,10 +78,9 @@ export default function NationalitiesTab({ data, sortDir }: { data: Table3Record
           {sortedData.map((entry, i) => (
             <div
               key={i}
-              className="rounded-xl p-3 mb-2"
+              className="mobile-card mb-2"
               style={{
-                background: entry.gender === "ذكر" ? "var(--male-bg)" : "var(--female-bg)",
-                border: `1px solid ${entry.gender === "ذكر" ? "var(--male-border)" : "var(--female-border)"}`,
+                borderRight: `3px solid ${entry.gender === "ذكر" ? "var(--male-accent)" : "var(--female-accent)"}`,
               }}
             >
               <div className="flex justify-between items-center mb-2">
@@ -89,7 +88,7 @@ export default function NationalitiesTab({ data, sortDir }: { data: Table3Record
                   <span className="text-xs font-bold" style={{ color: "var(--text-muted)" }}>
                     #{i + 1}
                   </span>
-                  <Globe2 className="w-4 h-4" style={{ color: "var(--color-primary)" }} />
+                  <Globe2 className="w-4 h-4" style={{ color: "var(--text-accent)" }} />
                   {entry.nationality}
                 </span>
                 <GenderBadge gender={entry.gender} />
@@ -134,9 +133,9 @@ export default function NationalitiesTab({ data, sortDir }: { data: Table3Record
                 <tr key={`${nationality}-${gi}`}>
                   <AccentCell gender={entry.gender} />
                   {gi === 0 && (
-                    <td rowSpan={genders.length} className="font-semibold align-top pt-3">
-                      <span className="flex items-center gap-2">
-                        <Globe2 className="w-4 h-4" style={{ color: "var(--color-primary)" }} />
+                    <td rowSpan={genders.length} className="align-top pt-3">
+                      <span className="flex items-center gap-2" style={{ color: "var(--text-primary)", fontWeight: 500 }}>
+                        <Globe2 className="w-4 h-4" style={{ color: "var(--text-accent)" }} />
                         {nationality}
                       </span>
                     </td>
@@ -152,28 +151,23 @@ export default function NationalitiesTab({ data, sortDir }: { data: Table3Record
 
       <div className="md:hidden space-y-3 animate-tab-content">
         {groupedEntries.map(({ nationality, genders }) => (
-          <div key={nationality} className="mobile-card">
-            <h4 className="text-sm font-bold mb-3 flex items-center gap-2" style={{ color: "var(--color-primary)" }}>
-              <Globe2 className="w-4 h-4" />
+          <div key={nationality} className="mobile-card mb-2">
+            <p className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
+              <Globe2 className="w-4 h-4" style={{ color: "var(--text-accent)" }} />
               {nationality}
-            </h4>
-            <div className="space-y-3">
-              {genders.map((entry, gi) => (
-                <div
-                  key={gi}
-                  className="rounded-xl p-3"
-                  style={{
-                    background: entry.gender === "ذكر" ? "var(--male-bg)" : "var(--female-bg)",
-                    border: `1px solid ${entry.gender === "ذكر" ? "var(--male-border)" : "var(--female-border)"}`,
-                  }}
-                >
-                  <div className="flex justify-between items-center mb-2">
-                    <GenderBadge gender={entry.gender} />
-                  </div>
-                  <ScoreCards max={entry.maxScore} min={entry.minScore} avg={entry.avgScore} />
-                </div>
-              ))}
-            </div>
+            </p>
+            {genders.map((entry, gi) => (
+              <div
+                key={gi}
+                className="mobile-card mb-2 last:mb-0"
+                style={{
+                  borderRight: `3px solid ${entry.gender === "ذكر" ? "var(--male-accent)" : "var(--female-accent)"}`,
+                }}
+              >
+                <GenderBadge gender={entry.gender} />
+                <ScoreCards max={entry.maxScore} min={entry.minScore} avg={entry.avgScore} />
+              </div>
+            ))}
           </div>
         ))}
       </div>

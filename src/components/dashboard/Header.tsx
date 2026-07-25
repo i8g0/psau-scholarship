@@ -25,22 +25,22 @@ export default function Header({ onRefresh, refreshing, onToggleDarkMode, darkMo
           />
           <div>
             <div className="flex items-center gap-2.5">
-              <h1 className="text-base md:text-lg font-bold font-arabic" style={{ color: "var(--text-inverse)" }}>
+              <h1 className="text-base md:text-lg font-bold font-arabic text-white">
                 إحصائيات موزونات القبول
               </h1>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold" style={{
-                background: "rgba(220, 38, 38, 0.15)",
-                border: "1px solid rgba(220, 38, 38, 0.3)",
-                color: "var(--color-danger)",
+                background: "rgba(239, 68, 68, 0.2)",
+                border: "1px solid rgba(239, 68, 68, 0.4)",
+                color: "#ef4444",
               }}>
                 <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full" style={{ backgroundColor: "var(--color-danger)", opacity: 0.75 }} />
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ backgroundColor: "var(--color-danger)" }} />
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full" style={{ backgroundColor: "#ef4444", opacity: 0.75 }} />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ backgroundColor: "#ef4444" }} />
                 </span>
                 LIVE
               </span>
             </div>
-            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+            <p className="text-xs font-medium" style={{ color: "rgba(255, 255, 255, 0.85)" }}>
               جامعة الأمير سطام بن عبدالعزيز – دفعة 2026
             </p>
           </div>
@@ -51,7 +51,7 @@ export default function Header({ onRefresh, refreshing, onToggleDarkMode, darkMo
             onClick={onRefresh}
             disabled={refreshing}
             className="p-2 rounded-lg transition-all duration-200" style={{
-              color: "var(--text-inverse)",
+              color: "#ffffff",
               backgroundColor: "rgba(255,255,255,0.1)",
               touchAction: "manipulation",
             }}
@@ -64,7 +64,7 @@ export default function Header({ onRefresh, refreshing, onToggleDarkMode, darkMo
           <button
             onClick={onToggleDarkMode}
             className="p-2 rounded-lg transition-all duration-200" style={{
-              color: "var(--text-inverse)",
+              color: "#ffffff",
               backgroundColor: "rgba(255,255,255,0.1)",
               touchAction: "manipulation",
             }}
