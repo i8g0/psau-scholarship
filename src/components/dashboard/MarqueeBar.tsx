@@ -41,7 +41,7 @@ export default function MarqueeBar({ visible }: MarqueeBarProps) {
       onMouseLeave={handleMouseLeave}
     >
       <div className="card h-full marquee-inner" style={{ background: "var(--color-warning)", borderColor: "var(--color-warning)" }}>
-        <span className="marquee-label" style={{ fontFamily: "var(--font-display)", color: "#000" }}>
+        <span className="marquee-label" style={{ fontFamily: "var(--font-arabic)", color: "#000" }}>
           <AlertTriangle className="w-3.5 h-3.5" />
           تنبيه هام
         </span>

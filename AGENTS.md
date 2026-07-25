@@ -87,8 +87,7 @@ SPREADSHEET_ID=               # Google Sheet ID (tab must be named "Summery")
 | `majors` | Campus, Major, Gender, Sort |
 
 ## Fonts (layout.tsx)
-- `Archivo Black` — display/headings/numbers
-- `IBM Plex Sans Arabic` — Arabic body text
+- `IBM Plex Sans Arabic` — all Arabic text (headings, body, UI, numbers)
 - `JetBrains Mono` — monospace
 
 ## Recent Fixes (This Session)
@@ -96,10 +95,11 @@ SPREADSHEET_ID=               # Google Sheet ID (tab must be named "Summery")
 - **Gender badge runtime error** fixed in `FilterBar.tsx` — `getBadgeStyle` now returns style objects, not class strings
 - **Tab labels** now use Arabic font (`font-arabic` class) for consistency
 - **Tab arrows** mirrored for RTL: `→` changed to `←` in `types/index.ts`
-- **Search icon overlap** fixed — increased input padding in `FilterBar.tsx` (`pr-14`, clear button `left-4`)
+- **Search icon overlap** fixed — created `.input-field-search` class in `globals.css` with explicit RTL padding (`padding-right: 56px`, `padding-left: 40px`), applied in `FilterBar.tsx` and `SearchableSelect.tsx`
 - **Footer contrast** improved — switched from `--bg-header` to `--color-surface` with proper text colors
 - **Marquee bar** — animation now moves rightward for RTL, 30s duration, seamless loop via content duplication
 - **Score column widths** — fixed 80px for Min/Avg/Max columns in `globals.css`
+- **All text now uses IBM Plex Sans Arabic** — replaced Archivo Black (`--font-display`) with IBM Plex Sans Arabic (`--font-arabic`) in table headers (`.table-container th`), tab items (`.tab-item`), score cells (`.score-high`, `.score-low`, `.score-avg`), group headers (`.group-header td`), mobile group headers (`.mobile-group-header`), marquee label (`.marquee-label`), page title (Header.tsx), and marquee label (MarqueeBar.tsx)
 
 ## Known Pre-existing Lint Warnings (Not Blocking)
 - `useState` called in `useEffect` (DashboardTabs, SearchableSelect, useAdmissions)

@@ -87,30 +87,28 @@ export default function FilterBar({
 
   return (
     <div className="space-y-3">
-      <div className="card p-3">
-        <div className="relative">
-          <Search
-            className="absolute right-14 top-1/2 -translate-y-1/2 w-4.5 h-4.5"
-            style={{ color: "var(--text-muted)" }}
-          />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="بحث في جميع الحقول..."
-            className="input-field pr-14 pl-10 py-3 min-h-[44px]"
-            style={{ touchAction: "manipulation" }}
-          />
-          {searchQuery && (
-            <button
-              onClick={() => onSearchChange("")}
-              className="absolute left-4 top-1/2 -translate-y-1/2 p-1"
-              style={{ color: "var(--text-muted)", touchAction: "manipulation" }}
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
-        </div>
+      <div className="relative">
+        <Search
+          className="absolute right-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5"
+          style={{ color: "var(--text-muted)" }}
+        />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => onSearchChange(e.target.value)}
+          placeholder="بحث في جميع الحقول..."
+          className="input-field input-field-search py-3 min-h-[44px] w-full"
+          style={{ touchAction: "manipulation" }}
+        />
+        {searchQuery && (
+          <button
+            onClick={() => onSearchChange("")}
+            className="absolute left-4 top-1/2 -translate-y-1/2 p-1"
+            style={{ color: "var(--text-muted)", touchAction: "manipulation" }}
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       <div className="flex items-center justify-between md:hidden">

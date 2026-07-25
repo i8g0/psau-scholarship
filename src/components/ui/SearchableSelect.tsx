@@ -125,7 +125,7 @@ export function SearchableSelect({
                 setHighlighted(0);
               }}
               onKeyDown={handleInputKeyDown}
-              className="flex-1 text-sm outline-none bg-transparent"
+              className="flex-1 text-sm outline-none bg-transparent pr-10"
               style={{ color: "var(--text-primary)" }}
               placeholder="بحث..."
               aria-autocomplete="list"

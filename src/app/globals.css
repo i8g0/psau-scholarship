@@ -274,7 +274,7 @@ body {
   letter-spacing: 0.02em;
   white-space: nowrap;
   border-bottom: 2px solid #003D5C;
-  font-family: var(--font-display);
+  font-family: var(--font-arabic);
 }
 .dark .table-container thead tr {
   background: var(--bg-header);
@@ -327,7 +327,7 @@ body {
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
   text-align: center;
-  font-family: var(--font-display);
+  font-family: var(--font-arabic);
 }
 .tab-item:hover {
   color: var(--color-text);
@@ -364,6 +364,16 @@ body {
 }
 .input-field::placeholder {
   color: var(--text-muted);
+}
+
+/* Search input with icon - extra right padding for RTL icon */
+.input-field-search {
+  padding-right: 56px; /* 3.5rem = 56px - space for search icon */
+  padding-left: 40px;  /* 2.5rem = 40px - space for clear button */
+}
+.dark .input-field-search {
+  padding-right: 56px;
+  padding-left: 40px;
 }
 
 /* ==========================================
@@ -481,19 +491,19 @@ body {
   color: var(--score-high);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  font-family: var(--font-display);
+  font-family: var(--font-arabic);
 }
 .score-low {
   color: var(--score-low);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  font-family: var(--font-display);
+  font-family: var(--font-arabic);
 }
 .score-avg {
   color: var(--score-avg);
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  font-family: var(--font-display);
+  font-family: var(--font-arabic);
 }
 
 /* Score column widths */
@@ -522,7 +532,7 @@ body {
   font-weight: 700;
   color: var(--color-primary);
   font-size: 0.9rem;
-  font-family: var(--font-display);
+  font-family: var(--font-arabic);
 }
 .dark .group-header td {
   color: var(--color-primary-dark);
@@ -545,8 +555,7 @@ body {
   margin: 0 0 16px;
   box-shadow: 0 6px 16px rgba(0, 61, 92, 0.4), var(--shadow-sm);
   letter-spacing: 0.01em;
-  clip-path: polygon(0% 50%, 6% 0%, 100% 0%, 100% 100%, 6% 100%);
-  font-family: var(--font-display);
+  font-family: var(--font-arabic);
 }
 .dark .mobile-group-header {
   background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 60%, #002B44 100%);
@@ -697,7 +706,7 @@ a:focus-visible {
   color: #000;
   background: linear-gradient(135deg, #D97706, #B45309);
   white-space: nowrap;
-  font-family: var(--font-display);
+  font-family: var(--font-arabic);
 }
 .marquee-track {
   flex: 1;

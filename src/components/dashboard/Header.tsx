@@ -25,7 +25,7 @@ export default function Header({ onRefresh, refreshing, onToggleDarkMode, darkMo
           />
           <div>
             <div className="flex items-center gap-2.5">
-              <h1 className="text-base md:text-lg font-bold" style={{ color: "var(--text-inverse)", fontFamily: "var(--font-display)" }}>
+              <h1 className="text-base md:text-lg font-bold font-arabic" style={{ color: "var(--text-inverse)" }}>
                 إحصائيات موزونات القبول
               </h1>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold" style={{
