@@ -22,8 +22,8 @@ export default function NationalitiesTab({ data, sortDir }: { data: Table3Record
       ),
       avg: meanOf(records.map((r) => r.avgScore)),
     }));
-    return sortByScore(entries, (e) => e.avg, "desc");
-  }, [data]);
+    return sortByScore(entries, (e) => e.avg, sortDir);
+  }, [data, sortDir]);
 
   if (data.length === 0) return <EmptyState loading={false} />;
 
@@ -132,9 +132,7 @@ export default function NationalitiesTab({ data, sortDir }: { data: Table3Record
             {groupedEntries.map(({ nationality, genders }) => (
               genders.map((entry, gi) => (
                 <tr key={`${nationality}-${gi}`}>
-                  {gi === 0 && (
-                    <AccentCell gender={entry.gender} rowSpan={genders.length} />
-                  )}
+                  <AccentCell gender={entry.gender} />
                   {gi === 0 && (
                     <td rowSpan={genders.length} className="font-semibold align-top pt-3">
                       <span className="flex items-center gap-2">

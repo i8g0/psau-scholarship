@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
+import { Building2, TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
 import { Table1Record, SortDir, sortByScore, groupBy, meanOf } from "@/types";
 import { GenderBadge, AccentCell, ScoreCells, ScoreCards, EmptyState } from "../../ui";
 
@@ -13,38 +13,35 @@ export default function MajorsNationalitiesTab({ data, sortDir }: { data: Table1
 
   const campusEntries = useMemo(() => {
     const campusMap = groupBy(data, (r) => r.campus);
-    return sortByScore(
-      [...campusMap.entries()].map(([campus, campusRecords]) => {
-        const majorMap = groupBy(campusRecords, (r) => r.major);
-        const majors = sortByScore(
-          [...majorMap.entries()].map(([major, majorRecords]) => {
-            const natMap = groupBy(majorRecords, (r) => r.nationality);
-            const nationalities = sortByScore(
-              [...natMap.entries()].map(([nationality, natRecords]) => ({
-                nationality,
-                genders: sortByScore(
-                  [...natRecords],
-                  (r) => (r.gender === "ذكر" ? 0 : 1),
-                  "asc"
-                ),
-                avg: meanOf(natRecords.map((r) => r.avgScore)),
-              })),
-              (n) => n.avg,
-              "desc"
-            );
-            const totalRows = nationalities.reduce((s, n) => s + n.genders.length, 0);
-            return { major, nationalities, totalRows, avg: meanOf(majorRecords.map((r) => r.avgScore)) };
-          }),
-          (m) => m.avg,
-          "desc"
-        );
-        const totalRows = majors.reduce((s, m) => s + m.totalRows, 0);
-        return { campus, majors, totalRows, avg: meanOf(campusRecords.map((r) => r.avgScore)) };
-      }),
-      (c) => c.avg,
-      "desc"
-    );
-  }, [data]);
+    const entries = [...campusMap.entries()].map(([campus, campusRecords]) => {
+      const majorMap = groupBy(campusRecords, (r) => r.major);
+      const majors = [...majorMap.entries()].map(([major, majorRecords]) => {
+        const natMap = groupBy(majorRecords, (r) => r.nationality);
+        const nationalities = [...natMap.entries()].map(([nationality, natRecords]) => ({
+          nationality,
+          genders: sortByScore(
+            [...natRecords],
+            (r) => (r.gender === "ذكر" ? 0 : 1),
+            "asc"
+          ),
+          avg: meanOf(natRecords.map((r) => r.avgScore)),
+        }));
+        return {
+          major,
+          nationalities: sortByScore(nationalities, (n) => n.avg, sortDir),
+          totalRows: nationalities.reduce((s, n) => s + n.genders.length, 0),
+          avg: meanOf(majorRecords.map((r) => r.avgScore)),
+        };
+      });
+      return {
+        campus,
+        majors: sortByScore(majors, (m) => m.avg, sortDir),
+        totalRows: majors.reduce((s, m) => s + m.totalRows, 0),
+        avg: meanOf(campusRecords.map((r) => r.avgScore)),
+      };
+    });
+    return sortByScore(entries, (c) => c.avg, sortDir);
+  }, [data, sortDir]);
 
   if (data.length === 0) return <EmptyState loading={false} />;
 
@@ -162,9 +159,7 @@ export default function MajorsNationalitiesTab({ data, sortDir }: { data: Table1
                 nationalities.map(({ nationality, genders }, ni) =>
                   genders.map((record, gi) => (
                     <tr key={`${campus}-${major}-${nationality}-${gi}`}>
-                      {mi === 0 && ni === 0 && gi === 0 && (
-                        <AccentCell gender={record.gender} rowSpan={majors.reduce((s, m) => s + m.totalRows, 0)} />
-                      )}
+                      <AccentCell gender={record.gender} />
                       {mi === 0 && ni === 0 && gi === 0 && (
                         <td rowSpan={majors.reduce((s, m) => s + m.totalRows, 0)}
                             className="align-top pt-3">
@@ -198,36 +193,39 @@ export default function MajorsNationalitiesTab({ data, sortDir }: { data: Table1
 
       <div className="md:hidden space-y-3 animate-tab-content">
         {campusEntries.map(({ campus, majors }) => (
-          <div key={campus} className="space-y-3">
-            <div className="sticky top-0 z-10 py-2" style={{ background: "var(--bg-body)" }}>
-              <span className="badge badge-campus text-sm font-bold">{campus}</span>
-            </div>
+          <div key={campus}>
+            <h3 className="mobile-group-header text-sm font-bold">
+              <span className="mobile-group-header-icon">
+                <Building2 className="w-3.5 h-3.5" />
+              </span>
+              {campus}
+            </h3>
             {majors.map(({ major, nationalities }) => (
-              <div key={`${campus}-${major}`} className="space-y-2">
-                <p className="text-sm font-bold px-1" style={{ color: "var(--text-primary)" }}>
+              <div key={`${campus}-${major}`} className="mobile-card mb-2">
+                <p className="text-sm font-semibold mb-3" style={{ color: "var(--text-primary)" }}>
                   {major}
                 </p>
-                {nationalities.map(({ nationality, genders }) => (
-                  <div key={`${campus}-${major}-${nationality}`} className="mr-3">
-                    <p className="text-xs mb-1 font-medium" style={{ color: "var(--text-secondary)" }}>
-                      {nationality}
-                    </p>
-                    {genders.map((record, gi) => (
-                      <div
-                        key={gi}
-                        className="mobile-card mb-2"
-                        style={{
-                          borderRight: `3px solid ${record.gender === "ذكر" ? "var(--male-accent)" : "var(--female-accent)"}`,
-                        }}
-                      >
-                        <div className="flex items-start justify-between mb-1">
-                          <GenderBadge gender={record.gender} />
+                {nationalities.map(({ nationality, genders }) =>
+                  genders.map((record, gi) => (
+                    <div
+                      key={`${nationality}-${gi}`}
+                      className="mobile-card mb-2"
+                      style={{
+                        borderRight: `3px solid ${record.gender === "ذكر" ? "var(--male-accent)" : "var(--female-accent)"}`,
+                      }}
+                    >
+                      <div className="flex items-start justify-between mb-1">
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                            {nationality}
+                          </p>
                         </div>
-                        <ScoreCards max={record.maxScore} min={record.minScore} avg={record.avgScore} />
+                        <GenderBadge gender={record.gender} />
                       </div>
-                    ))}
-                  </div>
-                ))}
+                      <ScoreCards max={record.maxScore} min={record.minScore} avg={record.avgScore} />
+                    </div>
+                  ))
+                )}
               </div>
             ))}
           </div>

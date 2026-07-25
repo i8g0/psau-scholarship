@@ -13,38 +13,35 @@ export default function NationalitiesMajorsTab({ data, sortDir }: { data: Table2
 
   const nationalityEntries = useMemo(() => {
     const natMap = groupBy(data, (r) => r.nationality);
-    return sortByScore(
-      [...natMap.entries()].map(([nationality, natRecords]) => {
-        const campusMap = groupBy(natRecords, (r) => r.campus);
-        const campuses = sortByScore(
-          [...campusMap.entries()].map(([campus, campusRecords]) => {
-            const majorMap = groupBy(campusRecords, (r) => r.major);
-            const majors = sortByScore(
-              [...majorMap.entries()].map(([major, majorRecords]) => ({
-                major,
-                genders: sortByScore(
-                  [...majorRecords],
-                  (r) => (r.gender === "ذكر" ? 0 : 1),
-                  "asc"
-                ),
-                avg: meanOf(majorRecords.map((r) => r.avgScore)),
-              })),
-              (m) => m.avg,
-              "desc"
-            );
-            const totalRows = majors.reduce((s, m) => s + m.genders.length, 0);
-            return { campus, majors, totalRows, avg: meanOf(campusRecords.map((r) => r.avgScore)) };
-          }),
-          (c) => c.avg,
-          "desc"
-        );
-        const totalRows = campuses.reduce((s, c) => s + c.totalRows, 0);
-        return { nationality, campuses, totalRows, avg: meanOf(natRecords.map((r) => r.avgScore)) };
-      }),
-      (n) => n.avg,
-      "desc"
-    );
-  }, [data]);
+    const entries = [...natMap.entries()].map(([nationality, natRecords]) => {
+      const campusMap = groupBy(natRecords, (r) => r.campus);
+      const campuses = [...campusMap.entries()].map(([campus, campusRecords]) => {
+        const majorMap = groupBy(campusRecords, (r) => r.major);
+        const majors = [...majorMap.entries()].map(([major, majorRecords]) => ({
+          major,
+          genders: sortByScore(
+            [...majorRecords],
+            (r) => (r.gender === "ذكر" ? 0 : 1),
+            "asc"
+          ),
+          avg: meanOf(majorRecords.map((r) => r.avgScore)),
+        }));
+        return {
+          campus,
+          majors: sortByScore(majors, (m) => m.avg, sortDir),
+          totalRows: majors.reduce((s, m) => s + m.genders.length, 0),
+          avg: meanOf(campusRecords.map((r) => r.avgScore)),
+        };
+      });
+      return {
+        nationality,
+        campuses: sortByScore(campuses, (c) => c.avg, sortDir),
+        totalRows: campuses.reduce((s, c) => s + c.totalRows, 0),
+        avg: meanOf(natRecords.map((r) => r.avgScore)),
+      };
+    });
+    return sortByScore(entries, (n) => n.avg, sortDir);
+  }, [data, sortDir]);
 
   if (data.length === 0) return <EmptyState loading={false} />;
 
@@ -167,9 +164,7 @@ export default function NationalitiesMajorsTab({ data, sortDir }: { data: Table2
                 majors.map(({ major, genders }, mi) =>
                   genders.map((record, gi) => (
                     <tr key={`${nationality}-${campus}-${major}-${gi}`}>
-                      {ci === 0 && mi === 0 && gi === 0 && (
-                        <AccentCell gender={record.gender} rowSpan={campuses.reduce((s, c) => s + c.totalRows, 0)} />
-                      )}
+                      <AccentCell gender={record.gender} />
                       {ci === 0 && mi === 0 && gi === 0 && (
                         <td rowSpan={campuses.reduce((s, c) => s + c.totalRows, 0)}
                             className="font-semibold align-top pt-3">
@@ -205,35 +200,40 @@ export default function NationalitiesMajorsTab({ data, sortDir }: { data: Table2
 
       <div className="md:hidden space-y-3 animate-tab-content">
         {nationalityEntries.map(({ nationality, campuses }) => (
-          <div key={nationality} className="space-y-3">
-            <div className="sticky top-0 z-10 py-2" style={{ background: "var(--bg-body)" }}>
-              <span className="flex items-center gap-2 text-sm font-bold" style={{ color: "var(--color-primary)" }}>
-                <Globe2 className="w-4 h-4" />
-                {nationality}
+          <div key={nationality}>
+            <h3 className="mobile-group-header text-sm font-bold">
+              <span className="mobile-group-header-icon">
+                <Globe2 className="w-3.5 h-3.5" />
               </span>
-            </div>
+              {nationality}
+            </h3>
             {campuses.map(({ campus, majors }) => (
-              <div key={`${nationality}-${campus}`} className="space-y-2">
-                <span className="badge badge-campus text-xs mr-2">{campus}</span>
-                {majors.map(({ major, genders }) => (
-                  <div key={`${nationality}-${campus}-${major}`} className="mobile-card mb-2 mr-4">
-                    <p className="text-sm font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
-                      {major}
-                    </p>
-                    {genders.map((record, gi) => (
-                      <div key={gi}
-                        className="rounded-xl p-3 mb-2 last:mb-0"
-                        style={{
-                          background: record.gender === "ذكر" ? "var(--male-bg)" : "var(--female-bg)",
-                          border: `1px solid ${record.gender === "ذكر" ? "var(--male-border)" : "var(--female-border)"}`,
-                        }}
-                      >
+              <div key={`${nationality}-${campus}`} className="mobile-card mb-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="badge badge-campus text-xs">{campus}</span>
+                </div>
+                {majors.map(({ major, genders }) =>
+                  genders.map((record, gi) => (
+                    <div
+                      key={`${major}-${gi}`}
+                      className="rounded-xl p-3 mb-2"
+                      style={{
+                        background: record.gender === "ذكر" ? "var(--male-bg)" : "var(--female-bg)",
+                        border: `1px solid ${record.gender === "ذكر" ? "var(--male-border)" : "var(--female-border)"}`,
+                      }}
+                    >
+                      <div className="flex items-start justify-between mb-1">
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                            {major}
+                          </p>
+                        </div>
                         <GenderBadge gender={record.gender} />
-                        <ScoreCards max={record.maxScore} min={record.minScore} avg={record.avgScore} />
                       </div>
-                    ))}
-                  </div>
-                ))}
+                      <ScoreCards max={record.maxScore} min={record.minScore} avg={record.avgScore} />
+                    </div>
+                  ))
+                )}
               </div>
             ))}
           </div>

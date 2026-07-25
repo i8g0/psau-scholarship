@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
+import { Building2, TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
 import { Table4Record, SortDir, sortByScore, groupBy, meanOf } from "@/types";
 import { GenderBadge, AccentCell, ScoreCells, ScoreCards, EmptyState } from "../../ui";
 
@@ -13,29 +13,26 @@ export default function MajorsTab({ data, sortDir }: { data: Table4Record[]; sor
 
   const campusEntries = useMemo(() => {
     const campusMap = groupBy(data, (r) => r.campus);
-    return sortByScore(
-      [...campusMap.entries()].map(([campus, records]) => {
-        const majorMap = groupBy(records, (r) => r.major);
-        const majors = sortByScore(
-          [...majorMap.entries()].map(([major, mRecords]) => ({
-            major,
-            genders: sortByScore(
-              [...mRecords],
-              (r) => (r.gender === "ذكر" ? 0 : 1),
-              "asc"
-            ),
-            avg: meanOf(mRecords.map((r) => r.avgScore)),
-          })),
-          (m) => m.avg,
-          "desc"
-        );
-        const totalRows = majors.reduce((sum, m) => sum + m.genders.length, 0);
-        return { campus, majors, totalRows, avg: meanOf(records.map((r) => r.avgScore)) };
-      }),
-      (c) => c.avg,
-      "desc"
-    );
-  }, [data]);
+    const entries = [...campusMap.entries()].map(([campus, records]) => {
+      const majorMap = groupBy(records, (r) => r.major);
+      const majors = [...majorMap.entries()].map(([major, mRecords]) => ({
+        major,
+        genders: sortByScore(
+          [...mRecords],
+          (r) => (r.gender === "ذكر" ? 0 : 1),
+          "asc"
+        ),
+        avg: meanOf(mRecords.map((r) => r.avgScore)),
+      }));
+      return {
+        campus,
+        majors: sortByScore(majors, (m) => m.avg, sortDir),
+        totalRows: majors.reduce((sum, m) => sum + m.genders.length, 0),
+        avg: meanOf(records.map((r) => r.avgScore)),
+      };
+    });
+    return sortByScore(entries, (c) => c.avg, sortDir);
+  }, [data, sortDir]);
 
   if (data.length === 0) return <EmptyState loading={false} />;
 
@@ -134,9 +131,7 @@ export default function MajorsTab({ data, sortDir }: { data: Table4Record[]; sor
               majors.map(({ major, genders }, mi) =>
                 genders.map((entry, gi) => (
                   <tr key={`${campus}-${major}-${gi}`}>
-                    {mi === 0 && gi === 0 && (
-                      <AccentCell gender={entry.gender} rowSpan={majors.reduce((s, m) => s + m.genders.length, 0)} />
-                    )}
+                    <AccentCell gender={entry.gender} />
                     {mi === 0 && gi === 0 && (
                       <td rowSpan={majors.reduce((s, m) => s + m.genders.length, 0)}
                           className="align-top pt-3">
@@ -162,10 +157,13 @@ export default function MajorsTab({ data, sortDir }: { data: Table4Record[]; sor
 
       <div className="md:hidden space-y-3 animate-tab-content">
         {campusEntries.map(({ campus, majors }) => (
-          <div key={campus} className="space-y-3">
-            <div className="sticky top-0 z-10 py-2" style={{ background: "var(--bg-body)" }}>
-              <span className="badge badge-campus text-sm font-bold">{campus}</span>
-            </div>
+          <div key={campus}>
+            <h3 className="mobile-group-header text-sm font-bold">
+              <span className="mobile-group-header-icon">
+                <Building2 className="w-3.5 h-3.5" />
+              </span>
+              {campus}
+            </h3>
             {majors.map(({ major, genders }) => (
               <div key={`${campus}-${major}`} className="mobile-card mb-2">
                 <p className="text-sm font-semibold mb-3" style={{ color: "var(--text-primary)" }}>
