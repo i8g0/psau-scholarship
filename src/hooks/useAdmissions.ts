@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { AdmissionRecord } from "@/types";
+import { TablesData } from "@/types";
 
 interface UseAdmissionsReturn {
-  records: AdmissionRecord[];
+  tables: TablesData | null;
   loading: boolean;
   error: string | null;
   lastUpdate: Date | null;
@@ -14,12 +14,12 @@ interface UseAdmissionsReturn {
 }
 
 export function useAdmissions(): UseAdmissionsReturn {
-  const [records, setRecords] = useState<AdmissionRecord[]>([]);
+  const [tables, setTables] = useState<TablesData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [tick, setTick] = useState(0);
+  const [timeAgo, setTimeAgo] = useState("");
 
   const fetchData = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -27,12 +27,12 @@ export function useAdmissions(): UseAdmissionsReturn {
       const res = await fetch("/api/admissions");
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
-      if (json.records) {
-        setRecords(json.records);
+      if (json.tables) {
+        setTables(json.tables);
         setLastUpdate(new Date());
         setError(null);
       } else {
-        throw new Error("Malformed response: missing records");
+        throw new Error("Malformed response: missing tables");
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to fetch admissions data";
@@ -45,26 +45,30 @@ export function useAdmissions(): UseAdmissionsReturn {
   }, []);
 
   useEffect(() => {
-    fetchData();
+    requestAnimationFrame(() => {
+      fetchData();
+    });
   }, [fetchData]);
 
   useEffect(() => {
-    const interval = setInterval(() => setTick((t) => t + 1), 30000);
+    const interval = setInterval(() => {
+      if (!lastUpdate) return;
+      const diff = Math.floor((Date.now() - lastUpdate.getTime()) / 1000);
+      if (diff < 10) {
+        setTimeAgo("الآن");
+      } else if (diff < 60) {
+        setTimeAgo(`منذ ${diff} ثانية`);
+      } else if (diff < 3600) {
+        setTimeAgo(`منذ ${Math.floor(diff / 60)} دقيقة`);
+      } else {
+        setTimeAgo(`منذ ${Math.floor(diff / 3600)} ساعة`);
+      }
+    }, 10000);
     return () => clearInterval(interval);
-  }, []);
-
-  const timeAgo = (() => {
-    if (!lastUpdate) return "";
-    const diff = Math.floor((Date.now() - lastUpdate.getTime()) / 1000);
-    if (diff < 10) return "الآن";
-    if (diff < 60) return `منذ ${diff} ثانية`;
-    const mins = Math.floor(diff / 60);
-    if (mins < 60) return `منذ ${mins} دقيقة`;
-    return `منذ ${Math.floor(mins / 60)} ساعة`;
-  })();
+  }, [lastUpdate]);
 
   return {
-    records,
+    tables,
     loading,
     error,
     lastUpdate,

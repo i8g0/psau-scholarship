@@ -1,4 +1,4 @@
-import { Building2, Globe2, Minimize2, EyeOff, GitBranch, Share2, BookOpen, Users } from "lucide-react";
+import { GitBranch, Share2, Globe2, BookOpen } from "lucide-react";
 
 export interface AdmissionRecord {
   campus: string;
@@ -17,7 +17,34 @@ export interface AggregatedRecord {
   count: number;
 }
 
+export type Table1Record = AdmissionRecord;
+export type Table2Record = AdmissionRecord;
+export interface Table3Record {
+  nationality: string;
+  gender: string;
+  maxScore: number;
+  avgScore: number;
+  minScore: number;
+}
+export interface Table4Record {
+  campus: string;
+  major: string;
+  gender: string;
+  maxScore: number;
+  avgScore: number;
+  minScore: number;
+}
+
+export interface TablesData {
+  table1: Table1Record[];  // Campus → Major → Nationality → Gender
+  table2: Table2Record[];  // Nationality → Campus → Major → Gender
+  table3: Table3Record[];  // Nationality → Gender
+  table4: Table4Record[];  // Campus → Major → Gender
+}
+
 export type SortDir = "none" | "desc" | "asc";
+
+export type PartialAdmissionRecord = Pick<AdmissionRecord, "campus" | "major" | "nationality" | "gender">;
 
 export interface FilterOpts {
   search?: string;
@@ -56,9 +83,20 @@ export function sortByScore<T>(
   return dir === "desc" ? sorted.reverse() : sorted;
 }
 
+export function groupBy<T>(items: T[], keyFn: (item: T) => string): Map<string, T[]> {
+  const map = new Map<string, T[]>();
+  items.forEach((item) => {
+    const key = keyFn(item);
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(item);
+  });
+  return map;
+}
+
 export function meanOf(values: number[]): number {
   if (values.length === 0) return 0;
-  return values.reduce((s, v) => s + v, 0) / values.length;
+  const sum = values.reduce((s, v) => s + v, 0);
+  return Number((sum / values.length).toFixed(5));
 }
 
 export function aggregateRecords(records: AdmissionRecord[]): AggregatedRecord {
@@ -67,7 +105,7 @@ export function aggregateRecords(records: AdmissionRecord[]): AggregatedRecord {
   return {
     maxScore: Math.max(...records.map((r) => r.maxScore)),
     minScore: Math.min(...records.map((r) => r.minScore)),
-    avgScore: records.reduce((sum, r) => sum + r.avgScore, 0) / records.length,
+    avgScore: Number((records.reduce((sum, r) => sum + r.avgScore, 0) / records.length).toFixed(5)),
     count: records.length,
   };
 }
@@ -91,13 +129,13 @@ export function normalizeArabic(text: string): string {
 }
 
 export function matchesFilters(
-  r: AdmissionRecord,
+  r: { campus?: string; major?: string; nationality?: string; gender?: string },
   opts: FilterOpts
 ): boolean {
   if (opts.search) {
     const q = normalizeArabic(opts.search);
     const combined = normalizeArabic(
-      `${r.campus} ${r.major} ${r.nationality} ${r.gender}`
+      `${r.campus ?? ''} ${r.major ?? ''} ${r.nationality ?? ''} ${r.gender ?? ''}`
     );
     if (!combined.includes(q)) return false;
   }
@@ -107,6 +145,7 @@ export function matchesFilters(
   if (opts.gender && r.gender !== opts.gender) return false;
   return true;
 }
+
 
 export function countBy(
   data: AdmissionRecord[],

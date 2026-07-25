@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Search, X, ChevronDown, Filter, BookOpen, Globe2, MapPin } from "lucide-react";
-import { normalizeArabic, SortDir, TabId } from "@/types";
+import { SortDir, TabId } from "@/types";
 import { SearchableSelect, SortToggle } from "@/components/ui";
 
 interface FilterBarProps {

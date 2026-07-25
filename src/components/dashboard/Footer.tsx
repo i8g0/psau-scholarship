@@ -2,12 +2,7 @@
 
 import Image from "next/image";
 
-interface FooterProps {
-  timeAgo?: string;
-  lastUpdate?: Date | null;
-}
-
-export default function Footer({ timeAgo, lastUpdate }: FooterProps) {
+export default function Footer() {
   return (
     <footer
       id="footer-ref"

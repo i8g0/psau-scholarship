@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from "react";
-import { Search, ChevronDown, X, Filter, Users, Globe2, TrendingUp, TrendingDown, BarChart3, Moon, Sun, RefreshCw, BookOpen, MapPin, Minimize2, EyeOff, AlertTriangle, GitBranch, Share2 } from "lucide-react";
+import { useState, useEffect, useLayoutEffect, useCallback, useMemo } from "react";
 import { useAdmissions } from "@/hooks/useAdmissions";
-import { TABS, AdmissionRecord, SortDir, TabId, FilterOpts, normalizeArabic, sortGroups, sortByScore, meanOf, matchesFilters, countBy, fmt, aggregateRecords } from "@/types";
-import { GenderBadge, AccentCell, ScoreCells, ScoreCards, EmptyState } from "@/components/ui";
+import { TABS, SortDir, TabId, Table1Record, Table2Record, Table3Record, Table4Record, matchesFilters } from "@/types";
+import { EmptyState } from "@/components/ui";
 import MajorsNationalitiesTab from "@/components/dashboard/views/MajorsNationalitiesTab";
 import NationalitiesMajorsTab from "@/components/dashboard/views/NationalitiesMajorsTab";
 import NationalitiesTab from "@/components/dashboard/views/NationalitiesTab";
@@ -17,7 +16,7 @@ import Footer from "@/components/dashboard/Footer";
 import MarqueeBar from "@/components/dashboard/MarqueeBar";
 
 export default function DashboardTabs() {
-  const { records: allRecords, loading, error, lastUpdate, refreshing, fetchData, timeAgo } = useAdmissions();
+  const { tables, loading, refreshing, fetchData, timeAgo } = useAdmissions();
 
   const [showDisclaimer, setShowDisclaimer] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
@@ -29,7 +28,6 @@ export default function DashboardTabs() {
   const [nationalityFilter, setNationalityFilter] = useState("");
   const [genderFilter, setGenderFilter] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [marqueeVisible, setMarqueeVisible] = useState(true);
 
   const dismissDisclaimer = useCallback(() => {
     setShowDisclaimer(false);
@@ -57,17 +55,67 @@ export default function DashboardTabs() {
     setSearchQuery("");
   }, []);
 
-  const campuses = useMemo(() => [...new Set(allRecords.map((r) => r.campus))].sort(), [allRecords]);
-  const majors = useMemo(() => [...new Set(allRecords.map((r) => r.major))].sort(), [allRecords]);
-  const nationalities = useMemo(() => [...new Set(allRecords.map((r) => r.nationality))].sort(), [allRecords]);
+  // Get the active table data based on current tab
+  const activeTableData = useMemo(() => {
+    if (!tables) return [];
+    switch (activeTab) {
+      case "majors-nationalities":
+        return tables.table1 as Table1Record[];
+      case "nationalities-majors":
+        return tables.table2 as Table2Record[];
+      case "nationalities":
+        return tables.table3 as Table3Record[];
+      case "majors":
+        return tables.table4 as Table4Record[];
+      default:
+        return [];
+    }
+  }, [tables, activeTab]);
+
+  // Extract filter options from the active table
+  const campuses = useMemo(() => {
+    if (!tables) return [];
+    const data = activeTab === "nationalities" ? tables.table4 : (activeTab === "majors" ? tables.table4 : tables.table1);
+    return [...new Set(data.map((r) => r.campus).filter(Boolean))].sort();
+  }, [tables, activeTab]);
+
+  const majors = useMemo(() => {
+    if (!tables) return [];
+    let data: { major: string }[] = [];
+    if (activeTab === "nationalities") {
+      data = tables.table3 as unknown as { major: string }[];
+    } else if (activeTab === "nationalities-majors") {
+      data = tables.table2;
+    } else if (activeTab === "majors") {
+      data = tables.table4;
+    } else {
+      data = tables.table1;
+    }
+    return [...new Set(data.map((r) => r.major).filter(Boolean))].sort();
+  }, [tables, activeTab]);
+
+  const nationalities = useMemo(() => {
+    if (!tables) return [];
+    let data: { nationality: string }[] = [];
+    if (activeTab === "majors") {
+      data = tables.table4 as unknown as { nationality: string }[];
+    } else if (activeTab === "majors-nationalities") {
+      data = tables.table1;
+    } else if (activeTab === "nationalities-majors") {
+      data = tables.table2;
+    } else {
+      data = tables.table3;
+    }
+    return [...new Set(data.map((r) => r.nationality).filter(Boolean))].sort();
+  }, [tables, activeTab]);
 
   const genderCounts = useMemo(() => ({
-    "ذكر": allRecords.filter((r) => r.gender === "ذكر").length,
-    "أنثى": allRecords.filter((r) => r.gender === "أنثى").length,
-  }), [allRecords]);
+    "ذكر": activeTableData.filter((r) => r.gender === "ذكر").length,
+    "أنثى": activeTableData.filter((r) => r.gender === "أنثى").length,
+  }), [activeTableData]);
 
   const filteredData = useMemo(() =>
-    allRecords.filter((r) =>
+    activeTableData.filter((r) =>
       matchesFilters(r, {
         search: searchQuery,
         campus: campusFilter,
@@ -76,7 +124,7 @@ export default function DashboardTabs() {
         gender: genderFilter,
       })
     ),
-    [allRecords, searchQuery, campusFilter, majorFilter, nationalityFilter, genderFilter]
+    [activeTableData, searchQuery, campusFilter, majorFilter, nationalityFilter, genderFilter]
   );
 
   const activeFiltersCount = useMemo(() =>
@@ -86,34 +134,22 @@ export default function DashboardTabs() {
 
   const stats = useMemo(() => ({
     total: filteredData.length,
-    campuses: new Set(filteredData.map((r) => r.campus)).size,
-    nationalities: new Set(filteredData.map((r) => r.nationality)).size,
-    majors: new Set(filteredData.map((r) => r.major)).size,
+    campuses: new Set(filteredData.map((r) => (r as { campus?: string }).campus).filter(Boolean)).size,
+    nationalities: new Set(filteredData.map((r) => (r as { nationality?: string }).nationality).filter(Boolean)).size,
+    majors: new Set(filteredData.map((r) => (r as { major?: string }).major).filter(Boolean)).size,
   }), [filteredData]);
-
-  useEffect(() => {
-    const footerEl = document.getElementById("footer-ref");
-    if (!footerEl || typeof IntersectionObserver === "undefined") return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setMarqueeVisible(!entry.isIntersecting),
-      { threshold: 0 }
-    );
-    observer.observe(footerEl);
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     const stored = localStorage.getItem("psau-dark-mode");
     if (stored === "true") {
-      setDarkMode(true);
       document.documentElement.classList.add("dark");
     }
+    requestAnimationFrame(() => setDarkMode(stored === "true"));
   }, []);
 
   useLayoutEffect(() => {
-    if (localStorage.getItem("psau-disclaimer-seen-v2") === "true") {
-      setShowDisclaimer(false);
-    }
+    const seen = localStorage.getItem("psau-disclaimer-seen-v2") === "true";
+    if (seen) requestAnimationFrame(() => setShowDisclaimer(false));
   }, []);
 
   useEffect(() => {
@@ -127,15 +163,16 @@ export default function DashboardTabs() {
   }, [showDisclaimer]);
 
   const getTabComponent = (tabId: TabId) => {
+    if (!tables) return <EmptyState loading={false} />;
     switch (tabId) {
       case "majors-nationalities":
-        return <MajorsNationalitiesTab data={filteredData} sortDir={sortDir} />;
+        return <MajorsNationalitiesTab data={tables.table1} sortDir={sortDir} />;
       case "nationalities-majors":
-        return <NationalitiesMajorsTab data={filteredData} sortDir={sortDir} />;
+        return <NationalitiesMajorsTab data={tables.table2} sortDir={sortDir} />;
       case "nationalities":
-        return <NationalitiesTab data={filteredData} sortDir={sortDir} />;
+        return <NationalitiesTab data={tables.table3} sortDir={sortDir} />;
       case "majors":
-        return <MajorsTab data={filteredData} sortDir={sortDir} />;
+        return <MajorsTab data={tables.table4} sortDir={sortDir} />;
       default:
         return <EmptyState loading={false} />;
     }
@@ -165,7 +202,7 @@ export default function DashboardTabs() {
           <span>{timeAgo && `آخر تحديث: ${timeAgo}`}</span>
         </div>
 
-<div className="tab-bar">
+        <div className="tab-bar">
           {TABS.map((tab) => {
             const Icon = tab.icon;
             return (
@@ -231,13 +268,13 @@ export default function DashboardTabs() {
         {!loading && stats.total > 0 && (
           <div className="text-center text-xs py-2" style={{ color: "var(--text-muted)" }}>
             عرض {stats.total} سجل
-            {activeFiltersCount > 0 && ` (من أصل ${allRecords.length})`}
+            {activeFiltersCount > 0 && ` (من أصل ${activeTableData.length})`}
           </div>
         )}
       </main>
 
-      <Footer timeAgo={timeAgo} lastUpdate={lastUpdate} />
-      <MarqueeBar visible={marqueeVisible} />
+      <Footer />
+      <MarqueeBar visible={true} />
     </div>
   );
 }

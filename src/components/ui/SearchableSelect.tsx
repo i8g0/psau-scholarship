@@ -47,8 +47,10 @@ export function SearchableSelect({
 
   useEffect(() => {
     if (open) {
-      setHighlighted(0);
-      requestAnimationFrame(() => searchInputRef.current?.focus());
+      requestAnimationFrame(() => {
+        setHighlighted(0);
+        searchInputRef.current?.focus();
+      });
     }
   }, [open]);
 

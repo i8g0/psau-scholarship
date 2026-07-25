@@ -1,108 +1,82 @@
-# PSAU Scholarship - Agent Instructions
-
-## Project Overview
-Public read-only dashboard displaying weighted GPA summaries for PSAU scholarship admissions (Class of 2026). **Data sourced live from Google Sheets** — no local fallback, no admin portal, no auth.
+# PSAU Scholarship — Agent Instructions
 
 ## Stack
-- Next.js 15 (App Router) + React 19 + TypeScript
-- Tailwind CSS v4 (CSS variables for theming) + **Bold Design System**
-- `googleapis` for Sheets API, `lucide-react` icons, `recharts` (unused but installed)
+- Next.js 16 (App Router) + React 19 + TypeScript
+- Tailwind CSS v4 (CSS variables) + Bold Design System
+- `googleapis` for Sheets API, `lucide-react` icons
 
 ## Commands
 ```bash
-npm run dev      # dev server with webpack (not turbopack)
-npm run build    # production build
-npm run start    # production server
-npm run lint     # eslint (next/core-web-vitals + typescript config)
+npm run dev        # dev server, requires --webpack flag (no turbopack)
+npm run build      # production build (lint → build for verification)
+npm run start      # production server
+npm run lint       # eslint (next/core-web-vitals + typescript)
 ```
+
+## Data Flow
+```
+Google Sheets (Summery!A:AB) → API (server-side, cached) → 4 tab components
+```
+- **API** (`src/app/api/admissions/route.ts`): Reads `Summery!A:AB` with **5s timeout**. Server-side `setInterval` every 5min refreshes in-memory cache. `GET` returns cached data instantly (cold-fetches once on first request). SWR headers: `s-maxage=300, stale-while-revalidate=600`. **No local fallback** — 500 if cold start + Sheets fail. No auth, no write.
+- **Hook** (`src/hooks/useAdmissions.ts`): Returns `{ tables, loading, error, lastUpdate, refreshing, fetchData, timeAgo }`. `tables` is `{ table1, table2, table3, table4 }`.
+
+## Google Sheet Layout (4 pivot tables side‑by‑side)
+| Range | Cols | Fields |
+|-------|------|--------|
+| `A:G` (0–6) | 7 | Branch, Major, Nationality, Gender, MAX, AVG, MIN |
+| `I:O` (8–14) | 7 | Nationality, Branch, Major, Gender, MAX, AVG, MIN |
+| `Q:U` (16–20) | 5 | Nationality, Gender, MAX, AVG, MIN |
+| `W:AB` (22–27) | 6 | Branch, Major, Gender, MAX, AVG, MIN |
+
+**CRITICAL**: Empty separator columns at H (7), P (15), V (21). If adding a new table, count columns from `export.csv` header — the ranges are **not** contiguous. API parses each table individually with `row.length >= N` guards.
 
 ## Architecture
 - **Server Component** (`src/app/page.tsx`): Renders `<DashboardTabs />` — no `use client`
-- **Client Orchestrator** (`src/components/dashboard/DashboardTabs.tsx`): All state, effects, interactivity
-- **Tab Views** (`src/components/dashboard/views/`): 
-  - `MajorsNationalitiesTab` — Campus → Major → Nationality → Gender
-  - `NationalitiesMajorsTab` — Nationality → Campus → Major → Gender (3-level)
-  - `NationalitiesTab` — Nationality → Gender (aggregated min/مقياس النزعة/max)
-  - `MajorsTab` — Campus → Major → Gender (aggregated, no nationality)
-- **UI Primitives** (`src/components/ui/`): SearchableSelect, SortToggle, GenderBadge, AccentCell, ScoreCells, ScoreCards, EmptyState
-- **Hooks** (`src/hooks/useAdmissions.ts`): SWR-like data fetching + timeAgo computation
-- **Types** (`src/types/index.ts`): AdmissionRecord, AggregatedRecord, TABS (4 tabs), SortDir, utilities
-- **API route** (`src/app/api/admissions/route.ts`):
-  - Reads Google Sheets `Summery!A:G` with 5s timeout
-  - **Server-side polling**: `setInterval` every 5 minutes updates in-memory cache
-  - `GET` always returns cached data instantly (or cold-fetches once on first request)
-  - SWR headers: `Cache-Control: public, s-maxage=300, stale-while-revalidate=600`
-  - **No local JSON fallback** — returns 500 if cold start + Sheets unavailable
-  - No auth, no write endpoints, no query params to force refresh
+- **Client Orchestrator** (`src/components/dashboard/DashboardTabs.tsx`): All state, effects, filters, tab routing. Routes `table1`/`table2`/`table3`/`table4` to respective tab.
+- **Tab Views** (`src/components/dashboard/views/`):
+  - `MajorsNationalitiesTab` — Campus → Major → Nationality → Gender (uses Table1Record)
+  - `NationalitiesMajorsTab` — Nationality → Campus → Major → Gender (uses Table2Record)
+  - `NationalitiesTab` — Nationality → Gender (uses Table3Record)
+  - `MajorsTab` — Campus → Major → Gender (uses Table4Record)
+- **UI Primitives** (`src/components/ui/`): SearchableSelect, SortToggle, GenderBadge, AccentCell (supports `rowSpan`), ScoreCells, ScoreCards, EmptyState
+- **Types** (`src/types/index.ts`): `Table{1..4}Record`, `TablesData`, `SortDir`, `FilterOpts`, `TABS` (4 tabs), utilities (`groupBy`, `sortByScore`, `sortGroups`, `meanOf`, `normalizeArabic`, `matchesFilters`)
 
-## Tabs (4)
-| Tab ID | Label | Grouping |
-|--------|-------|----------|
-| `majors-nationalities` | التخصصات ← الجنسيات | Campus → Major → Nationality → Gender |
-| `nationalities-majors` | الجنسيات ← التخصصات | Nationality → Campus → Major → Gender |
-| `nationalities` | الجنسيات | Nationality → Gender (aggregated) |
-| `majors` | التخصصات | Campus → Major → Gender (aggregated) |
+## Grouping (Rowspan Pattern)
+Each tab component has **two rendering paths**:
+- **Sorted** (`sortDir !== "none"`): Flat numbered list — every field repeated per row
+- **Default** (`sortDir === "none"`): Hierarchical with `rowSpan` — parent names shown once
 
-**Gender is always a grouping level** (not just a filter) — "2 separate universities under the same name".
+Implementation pattern (in each tab's `useMemo`):
+1. `groupBy(data, keyFn)` builds a `Map<string, T[]>`
+2. Sort groups by `meanOf(avgScores)` descending
+3. Nested `map()` with `rowSpan` on the first row of each group
+
+Gender rows sort male-first (`gender === "ذكر" ? 0 : 1`).
 
 ## Critical Conventions
-- **RTL Arabic throughout** — `dir="rtl"`, **IBM Plex Sans Arabic** font, all text Arabic
-- **Arrows in labels**: use `←` not `→` for logical flow in RTL (see `types/index.ts:31-32`)
-- **Marquee animation**: moves rightward for RTL (`translateX(-50%) → 0` in `globals.css:717-718`)
-- **Bold Design System** — **Archivo Black** for headings/numbers, **JetBrains Mono** for mono; spacing 4/8/12/16/24/32; radius 4/8/12px; palette: Primary `#0077BC`, Secondary `#009866`, Surface `#111111`/white
-- **CSS variables in `globals.css`** — Bold tokens + semantic light/dark mode
-- **Modular components** — Components split by concern; barrel exports in `src/components/ui/index.ts`
-- **Privacy-first** — API returns only aggregated data (min/avg/max per group); raw scores never exposed
-- **Score column order** — Min | مقياس النزعة | Max (formerly: Max | Min | Avg)
-- **Avg label** — "المتوسط" renamed to **"مقياس النزعة"**
-- **No test framework** — Manual testing only via `npm run dev`
+- **RTL Arabic throughout**: `dir="rtl"`, `lang="ar"`, IBM Plex Sans Arabic font, all UI text Arabic
+- **Arrows in labels**: use `←` not `→` (RTL logical flow, in `types/index.ts`)
+- **Marquee animation**: moves rightward (`translateX(-50%) → 0` in `globals.css`)
+- **Score column order**: Min | مقياس النزعة | Max
+- **Avg label**: "مقياس النزعة" (not "المتوسط")
+- **Privacy**: API returns only pre-aggregated min/avg/max — no raw scores
+- **No test framework** — manual verification via `npm run dev`
 
-## Environment Variables (`.env.local` - gitignored)
-```
-GOOGLE_CLIENT_EMAIL=          # Service account email
-GOOGLE_PRIVATE_KEY=           # PKCS#8 private key with \n newlines
-SPREADSHEET_ID=               # Google Sheet ID (tab must be named "Summery")
-```
-**Removed:** `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `ADMIN_SECRET`
+## Data Quality (API)
+- Invalid `avgScore` (< 0 or > 100) is corrected to `(maxScore + minScore) / 2` with a warning logged
+- Zero-score rows (max=0, avg=0, min=0) are discarded
+- The sheet is the source of truth — no client-side aggregation or recalculation
 
-## Google Sheets Setup
-- Sheet tab name: **Summery** (typo — code reads `Summery!A:G`)
-- Columns A-G: campus, major, nationality, gender, max, avg, min
-- Service account needs Editor access
-
-## Build & Deploy Notes
+## Build & Deploy
 - Vercel recommended; add all env vars in project settings
 - Build output: static `/`, dynamic `/api/admissions`
-- Revalidate: `/api/admissions` = 300s (ISR via `export const revalidate = 300`)
-- **Lint**: `npm run lint` shows pre-existing warnings (setState in effects, Date.now in render, unused imports) — not blocking
-- **Build passes** with webpack (`npm run dev`) — turbopack not used
-- **Order**: `lint` → `build` for verification
+- Verification order: `npm run lint` → `npm run build`
+- Pre-existing lint warnings (setState in effects, Date.now in render, unused imports) are not blocking
 
-## FilterBar Context-Aware Filters
-| Active Tab | Visible Filters |
-|------------|-----------------|
-| `majors-nationalities` | Campus, Major, Nationality, Gender, Sort |
-| `nationalities-majors` | Nationality, Campus, Major, Gender, Sort |
-| `nationalities` | Nationality, Gender, Sort |
-| `majors` | Campus, Major, Gender, Sort |
-
-## Fonts (layout.tsx)
-- `IBM Plex Sans Arabic` — all Arabic text (headings, body, UI, numbers)
-- `JetBrains Mono` — monospace
-
-## Recent Fixes (This Session)
-- **Column header order** fixed in all 4 tab views to match ScoreCells output: Min | Avg | Max
-- **Gender badge runtime error** fixed in `FilterBar.tsx` — `getBadgeStyle` now returns style objects, not class strings
-- **Tab labels** now use Arabic font (`font-arabic` class) for consistency
-- **Tab arrows** mirrored for RTL: `→` changed to `←` in `types/index.ts`
-- **Search icon overlap** fixed — created `.input-field-search` class in `globals.css` with explicit RTL padding (`padding-right: 56px`, `padding-left: 40px`), applied in `FilterBar.tsx` and `SearchableSelect.tsx`
-- **Footer contrast** improved — switched from `--bg-header` to `--color-surface` with proper text colors
-- **Marquee bar** — animation now moves rightward for RTL, 30s duration, seamless loop via content duplication
-- **Score column widths** — fixed 80px for Min/Avg/Max columns in `globals.css`
-- **All text now uses IBM Plex Sans Arabic** — replaced Archivo Black (`--font-display`) with IBM Plex Sans Arabic (`--font-arabic`) in table headers (`.table-container th`), tab items (`.tab-item`), score cells (`.score-high`, `.score-low`, `.score-avg`), group headers (`.group-header td`), mobile group headers (`.mobile-group-header`), marquee label (`.marquee-label`), page title (Header.tsx), and marquee label (MarqueeBar.tsx)
-
-## Known Pre-existing Lint Warnings (Not Blocking)
-- `useState` called in `useEffect` (DashboardTabs, SearchableSelect, useAdmissions)
-- `Date.now()` used in render (useAdmissions)
-- Unused imports in several files
-- These exist in the original codebase and are not blocking build
+## Environment (`.env.local` — gitignored)
+```
+GOOGLE_CLIENT_EMAIL=
+GOOGLE_PRIVATE_KEY=     # PKCS#8 with literal \n newlines
+SPREADSHEET_ID=         # Tab name in sheet: "Summery"
+```
+Service account needs Editor access.

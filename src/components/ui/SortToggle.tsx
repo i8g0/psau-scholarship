@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
-import { Search, ChevronDown, X } from "lucide-react";
-import { normalizeArabic, SortDir } from "@/types";
+import { useState, useEffect, useRef } from "react";
+import { ChevronDown } from "lucide-react";
+import { SortDir } from "@/types";
 
 interface SortToggleProps {
   value: SortDir;

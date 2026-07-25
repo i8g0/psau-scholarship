@@ -2,49 +2,28 @@
 
 import React, { useMemo } from "react";
 import { Globe2, TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
-import { AdmissionRecord, SortDir, sortGroups, sortByScore, meanOf, aggregateRecords } from "@/types";
+import { Table3Record, SortDir, sortByScore, groupBy, meanOf } from "@/types";
 import { GenderBadge, AccentCell, ScoreCells, ScoreCards, EmptyState } from "../../ui";
 
-export default function NationalitiesTab({ data, sortDir }: { data: AdmissionRecord[]; sortDir: SortDir }) {
-  const grouped = useMemo(() => {
-    const map = new Map<string, AdmissionRecord[]>();
-    data.forEach((r) => {
-      const key = `${r.nationality}||${r.gender}`;
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(r);
-    });
+export default function NationalitiesTab({ data, sortDir }: { data: Table3Record[]; sortDir: SortDir }) {
+  const sortedData = useMemo(() => {
+    if (sortDir === "none") return data;
+    return sortByScore([...data], (r) => r.avgScore, sortDir);
+  }, [data, sortDir]);
 
-    const natMap = new Map<string, { gender: string; agg: { maxScore: number; avgScore: number; minScore: number; count: number } }[]>();
-    for (const [key, records] of map.entries()) {
-      const [nationality, gender] = key.split("||");
-      if (!natMap.has(nationality)) natMap.set(nationality, []);
-      natMap.get(nationality)!.push({
-        gender,
-        agg: aggregateRecords(records),
-      });
-    }
-    return natMap;
+  const groupedEntries = useMemo(() => {
+    const natMap = groupBy(data, (r) => r.nationality);
+    const entries = [...natMap.entries()].map(([nationality, records]) => ({
+      nationality,
+      genders: sortByScore(
+        [...records],
+        (r) => (r.gender === "ذكر" ? 0 : 1),
+        "asc"
+      ),
+      avg: meanOf(records.map((r) => r.avgScore)),
+    }));
+    return sortByScore(entries, (e) => e.avg, "desc");
   }, [data]);
-
-  const natEntries = useMemo(() => {
-    const withOrderedEntries = Array.from(grouped.entries()).map(
-      ([nationality, entries]): [string, { gender: string; agg: { maxScore: number; avgScore: number; minScore: number; count: number } }[]] => [
-        nationality,
-        sortDir === "none"
-          ? [...entries].sort((a, b) => (a.gender === "ذكر" ? -1 : b.gender === "ذكر" ? 1 : 0))
-          : sortByScore(entries, (e) => e.agg.avgScore, sortDir),
-      ]
-    );
-    return sortGroups(withOrderedEntries, (entries) => meanOf(entries.map((e) => e.agg.avgScore)), sortDir);
-  }, [grouped, sortDir]);
-
-  const flatSorted = useMemo(() => {
-    const flat: { nationality: string; gender: string; agg: { maxScore: number; avgScore: number; minScore: number; count: number } }[] = [];
-    grouped.forEach((entries, nationality) => {
-      entries.forEach((e) => flat.push({ nationality, ...e }));
-    });
-    return sortByScore(flat, (e) => e.agg.avgScore, sortDir);
-  }, [grouped, sortDir]);
 
   if (data.length === 0) return <EmptyState loading={false} />;
 
@@ -77,7 +56,7 @@ export default function NationalitiesTab({ data, sortDir }: { data: AdmissionRec
               </tr>
             </thead>
             <tbody>
-              {flatSorted.map((entry, i) => (
+              {sortedData.map((entry, i) => (
                 <tr key={i}>
                   <AccentCell gender={entry.gender} />
                   <td style={{ color: "var(--text-muted)" }}>{i + 1}</td>
@@ -88,7 +67,7 @@ export default function NationalitiesTab({ data, sortDir }: { data: AdmissionRec
                     </span>
                   </td>
                   <td><GenderBadge gender={entry.gender} /></td>
-                  <ScoreCells max={entry.agg.maxScore} min={entry.agg.minScore} avg={entry.agg.avgScore} />
+                  <ScoreCells max={entry.maxScore} min={entry.minScore} avg={entry.avgScore} />
                 </tr>
               ))}
             </tbody>
@@ -96,7 +75,7 @@ export default function NationalitiesTab({ data, sortDir }: { data: AdmissionRec
         </div>
 
         <div className="md:hidden space-y-3 animate-tab-content">
-          {flatSorted.map((entry, i) => (
+          {sortedData.map((entry, i) => (
             <div
               key={i}
               className="rounded-xl p-3 mb-2"
@@ -110,11 +89,12 @@ export default function NationalitiesTab({ data, sortDir }: { data: AdmissionRec
                   <span className="text-xs font-bold" style={{ color: "var(--text-muted)" }}>
                     #{i + 1}
                   </span>
-                  🌍 {entry.nationality}
+                  <Globe2 className="w-4 h-4" style={{ color: "var(--color-primary)" }} />
+                  {entry.nationality}
                 </span>
                 <GenderBadge gender={entry.gender} />
               </div>
-              <ScoreCards max={entry.agg.maxScore} min={entry.agg.minScore} avg={entry.agg.avgScore} />
+              <ScoreCards max={entry.maxScore} min={entry.minScore} avg={entry.avgScore} />
             </div>
           ))}
         </div>
@@ -149,12 +129,14 @@ export default function NationalitiesTab({ data, sortDir }: { data: AdmissionRec
             </tr>
           </thead>
           <tbody>
-            {natEntries.map(([nationality, entries]) =>
-              entries.map((entry, ei) => (
-                <tr key={`${nationality}-${ei}`}>
-                  <AccentCell gender={entry.gender} />
-                  {ei === 0 && (
-                    <td rowSpan={entries.length} className="align-top pt-4 font-semibold">
+            {groupedEntries.map(({ nationality, genders }) => (
+              genders.map((entry, gi) => (
+                <tr key={`${nationality}-${gi}`}>
+                  {gi === 0 && (
+                    <AccentCell gender={entry.gender} rowSpan={genders.length} />
+                  )}
+                  {gi === 0 && (
+                    <td rowSpan={genders.length} className="font-semibold align-top pt-3">
                       <span className="flex items-center gap-2">
                         <Globe2 className="w-4 h-4" style={{ color: "var(--color-primary)" }} />
                         {nationality}
@@ -162,24 +144,25 @@ export default function NationalitiesTab({ data, sortDir }: { data: AdmissionRec
                     </td>
                   )}
                   <td><GenderBadge gender={entry.gender} /></td>
-                  <ScoreCells max={entry.agg.maxScore} min={entry.agg.minScore} avg={entry.agg.avgScore} />
+                  <ScoreCells max={entry.maxScore} min={entry.minScore} avg={entry.avgScore} />
                 </tr>
               ))
-            )}
+            ))}
           </tbody>
         </table>
       </div>
 
       <div className="md:hidden space-y-3 animate-tab-content">
-        {natEntries.map(([nationality, entries]) => (
+        {groupedEntries.map(({ nationality, genders }) => (
           <div key={nationality} className="mobile-card">
             <h4 className="text-sm font-bold mb-3 flex items-center gap-2" style={{ color: "var(--color-primary)" }}>
-              🌍 {nationality}
+              <Globe2 className="w-4 h-4" />
+              {nationality}
             </h4>
             <div className="space-y-3">
-              {entries.map((entry, ei) => (
+              {genders.map((entry, gi) => (
                 <div
-                  key={ei}
+                  key={gi}
                   className="rounded-xl p-3"
                   style={{
                     background: entry.gender === "ذكر" ? "var(--male-bg)" : "var(--female-bg)",
@@ -189,7 +172,7 @@ export default function NationalitiesTab({ data, sortDir }: { data: AdmissionRec
                   <div className="flex justify-between items-center mb-2">
                     <GenderBadge gender={entry.gender} />
                   </div>
-                  <ScoreCards max={entry.agg.maxScore} min={entry.agg.minScore} avg={entry.agg.avgScore} />
+                  <ScoreCards max={entry.maxScore} min={entry.minScore} avg={entry.avgScore} />
                 </div>
               ))}
             </div>

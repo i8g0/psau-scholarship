@@ -10,9 +10,9 @@ try {
 export const revalidate = 300; // 5 minutes
 
 // ==========================================
-// Types
+// Types for 4 Tables inboundary 4 Tables
 // ==========================================
-interface AdmissionRecord {
+interface Table1Record {
   campus: string;
   major: string;
   nationality: string;
@@ -22,8 +22,42 @@ interface AdmissionRecord {
   minScore: number;
 }
 
+interface Table2Record {
+  nationality: string;
+  campus: string;
+  major: string;
+  gender: string;
+  maxScore: number;
+  avgScore: number;
+  minScore: number;
+}
+
+interface Table3Record {
+  nationality: string;
+  gender: string;
+  maxScore: number;
+  avgScore: number;
+  minScore: number;
+}
+
+interface Table4Record {
+  campus: string;
+  major: string;
+  gender: string;
+  maxScore: number;
+  avgScore: number;
+  minScore: number;
+}
+
+interface AllTablesData {
+  table1: Table1Record[];
+  table2: Table2Record[];
+  table3: Table3Record[];
+  table4: Table4Record[];
+}
+
 interface CacheItem {
-  records: AdmissionRecord[];
+  tables: AllTablesData;
   timestamp: number;
 }
 
@@ -35,7 +69,7 @@ const globalCache = globalThis as unknown as {
 // ==========================================
 // Google Sheets Fetcher with 5s Strict Timeout
 // ==========================================
-async function fetchFromGoogleSheets(): Promise<AdmissionRecord[]> {
+async function fetchFromGoogleSheets(): Promise<AllTablesData> {
   const spreadsheetId = process.env.SPREADSHEET_ID;
   const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
   const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
@@ -55,7 +89,7 @@ async function fetchFromGoogleSheets(): Promise<AdmissionRecord[]> {
   // Add 5-second strict timeout wrapper to prevent 30s hangs
   const fetchPromise = sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: "Summery!A:G",
+    range: "Summery!A:AB",
   });
 
   const timeoutPromise = new Promise<never>((_, reject) =>
@@ -69,33 +103,179 @@ async function fetchFromGoogleSheets(): Promise<AdmissionRecord[]> {
     throw new Error("No data found in Summery sheet");
   }
 
-  const records: AdmissionRecord[] = [];
+  const table1: Table1Record[] = [];
+  const table2: Table2Record[] = [];
+  const table3: Table3Record[] = [];
+  const table4: Table4Record[] = [];
+
+  const warnings: string[] = [];
 
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
-    if (!row || row.length < 7) continue;
+    if (!row) continue;
 
-    const [campus, major, nationality, gender, max, avg, min] = row;
-    if (!campus || !major || !gender) continue;
+    // Table 1: Columns A-G (0-6): Campus, Major, Nationality, Gender, MAX, AVG, MIN
+    if (row.length >= 7) {
+      const [campus, major, nationality, gender, max, avg, min] = row;
+      if (campus && major && gender) {
+        const maxScore = parseFloat(String(max).replace(/,/g, "")) || 0;
+        const avgScore = parseFloat(String(avg).replace(/,/g, "")) || 0;
+        const minScore = parseFloat(String(min).replace(/,/g, "")) || 0;
 
-    const maxScore = parseFloat(String(max).replace(/,/g, "")) || 0;
-    const avgScore = parseFloat(String(avg).replace(/,/g, "")) || 0;
-    const minScore = parseFloat(String(min).replace(/,/g, "")) || 0;
+        if (!(maxScore === 0 && avgScore === 0 && minScore === 0)) {
+          if (avgScore < 0 || avgScore > 100) {
+            const corrected = (maxScore + minScore) / 2;
+            warnings.push(`Table1 row ${i}: Invalid avgScore=${avgScore} for ${campus}/${major}/${nationality}/${gender}. Corrected to ${corrected.toFixed(3)}`);
+            table1.push({
+              campus: String(campus).trim(),
+              major: String(major).trim(),
+              nationality: String(nationality || "غير محدد").trim(),
+              gender: String(gender).trim(),
+              maxScore,
+              avgScore: corrected,
+              minScore,
+            });
+          } else {
+            table1.push({
+              campus: String(campus).trim(),
+              major: String(major).trim(),
+              nationality: String(nationality || "غير محدد").trim(),
+              gender: String(gender).trim(),
+              maxScore,
+              avgScore,
+              minScore,
+            });
+          }
+        }
+      }
+    }
 
-    if (maxScore === 0 && avgScore === 0 && minScore === 0) continue;
+    // Table 2: Columns I-O (8-14): Nationality, Branch, Major, Gender, MAX, AVG, MIN
+    if (row.length >= 15) {
+      const nationality2 = row[8];
+      const campus2 = row[9];
+      const major2 = row[10];
+      const gender2 = row[11];
+      const max2 = row[12];
+      const avg2 = row[13];
+      const min2 = row[14];
 
-    records.push({
-      campus: String(campus).trim(),
-      major: String(major).trim(),
-      nationality: String(nationality || "غير محدد").trim(),
-      gender: String(gender).trim(),
-      maxScore,
-      avgScore,
-      minScore,
-    });
+      if (nationality2 && campus2 && major2 && gender2) {
+        const maxScore = parseFloat(String(max2).replace(/,/g, "")) || 0;
+        const avgScore = parseFloat(String(avg2).replace(/,/g, "")) || 0;
+        const minScore = parseFloat(String(min2).replace(/,/g, "")) || 0;
+
+        if (!(maxScore === 0 && avgScore === 0 && minScore === 0)) {
+          if (avgScore < 0 || avgScore > 100) {
+            const corrected = (maxScore + minScore) / 2;
+            warnings.push(`Table2 row ${i}: Invalid avgScore=${avgScore} for ${nationality2}/${campus2}/${major2}/${gender2}. Corrected to ${corrected.toFixed(3)}`);
+            table2.push({
+              nationality: String(nationality2).trim(),
+              campus: String(campus2).trim(),
+              major: String(major2).trim(),
+              gender: String(gender2).trim(),
+              maxScore,
+              avgScore: corrected,
+              minScore,
+            });
+          } else {
+            table2.push({
+              nationality: String(nationality2).trim(),
+              campus: String(campus2).trim(),
+              major: String(major2).trim(),
+              gender: String(gender2).trim(),
+              maxScore,
+              avgScore,
+              minScore,
+            });
+          }
+        }
+      }
+    }
+
+    // Table 3: Columns Q-U (16-20): Nationality, Gender, MAX, AVG, MIN
+    if (row.length >= 21) {
+      const nationality3 = row[16];
+      const gender3 = row[17];
+      const max3 = row[18];
+      const avg3 = row[19];
+      const min3 = row[20];
+
+      if (nationality3 && gender3) {
+        const maxScore = parseFloat(String(max3).replace(/,/g, "")) || 0;
+        const avgScore = parseFloat(String(avg3).replace(/,/g, "")) || 0;
+        const minScore = parseFloat(String(min3).replace(/,/g, "")) || 0;
+
+        if (!(maxScore === 0 && avgScore === 0 && minScore === 0)) {
+          if (avgScore < 0 || avgScore > 100) {
+            const corrected = (maxScore + minScore) / 2;
+            warnings.push(`Table3 row ${i}: Invalid avgScore=${avgScore} for ${nationality3}/${gender3}. Corrected to ${corrected.toFixed(3)}`);
+            table3.push({
+              nationality: String(nationality3).trim(),
+              gender: String(gender3).trim(),
+              maxScore,
+              avgScore: corrected,
+              minScore,
+            });
+          } else {
+            table3.push({
+              nationality: String(nationality3).trim(),
+              gender: String(gender3).trim(),
+              maxScore,
+              avgScore,
+              minScore,
+            });
+          }
+        }
+      }
+    }
+
+    // Table 4: Columns W-AB (22-27): Branch, Major, Gender, MAX, AVG, MIN
+    if (row.length >= 28) {
+      const campus4 = row[22];
+      const major4 = row[23];
+      const gender4 = row[24];
+      const max4 = row[25];
+      const avg4 = row[26];
+      const min4 = row[27];
+
+      if (campus4 && major4 && gender4) {
+        const maxScore = parseFloat(String(max4).replace(/,/g, "")) || 0;
+        const avgScore = parseFloat(String(avg4).replace(/,/g, "")) || 0;
+        const minScore = parseFloat(String(min4).replace(/,/g, "")) || 0;
+
+        if (!(maxScore === 0 && avgScore === 0 && minScore === 0)) {
+          if (avgScore < 0 || avgScore > 100) {
+            const corrected = (maxScore + minScore) / 2;
+            warnings.push(`Table4 row ${i}: Invalid avgScore=${avgScore} for ${campus4}/${major4}/${gender4}. Corrected to ${corrected.toFixed(3)}`);
+            table4.push({
+              campus: String(campus4).trim(),
+              major: String(major4).trim(),
+              gender: String(gender4).trim(),
+              maxScore,
+              avgScore: corrected,
+              minScore,
+            });
+          } else {
+            table4.push({
+              campus: String(campus4).trim(),
+              major: String(major4).trim(),
+              gender: String(gender4).trim(),
+              maxScore,
+              avgScore,
+              minScore,
+            });
+          }
+        }
+      }
+    }
   }
 
-  return records;
+  if (warnings.length > 0) {
+    console.warn(`[Data Quality] ${warnings.length} corrections applied:`, warnings);
+  }
+
+  return { table1, table2, table3, table4 };
 }
 
 // ==========================================
@@ -108,12 +288,13 @@ if (typeof globalCache.admissionsCache === "undefined") {
   // Initialize poller once per process
   setInterval(async () => {
     try {
-      const records = await fetchFromGoogleSheets();
+      const tables = await fetchFromGoogleSheets();
       globalCache.admissionsCache = {
-        records,
+        tables,
         timestamp: Date.now(),
       };
-      console.log(`[Poller] Cache updated: ${records.length} records at ${new Date().toISOString()}`);
+      const totalRecords = tables.table1.length + tables.table2.length + tables.table3.length + tables.table4.length;
+      console.log(`[Poller] Cache updated: ${totalRecords} total records at ${new Date().toISOString()}`);
     } catch (err) {
       console.error("[Poller] Failed to refresh from Sheets:", err instanceof Error ? err.message : err);
       // Keep last good cache - do not clear it
@@ -130,12 +311,23 @@ export async function GET() {
 
   // 1. Cache exists and is fresh -> return immediately
   if (globalCache.admissionsCache && now - globalCache.admissionsCache.timestamp < cacheAge) {
+    const { tables, timestamp } = globalCache.admissionsCache;
+    const totalRecords = tables.table1.length + tables.table2.length + tables.table3.length + tables.table4.length;
     return NextResponse.json(
       {
-        records: globalCache.admissionsCache.records,
-        count: globalCache.admissionsCache.records.length,
+        tables,
+        count: totalRecords,
         source: "google-sheets",
-        timestamp: new Date(globalCache.admissionsCache.timestamp).toISOString(),
+        timestamp: new Date(timestamp).toISOString(),
+        dataQuality: {
+          recordCounts: {
+            table1: tables.table1.length,
+            table2: tables.table2.length,
+            table3: tables.table3.length,
+            table4: tables.table4.length,
+          },
+          lastChecked: new Date(timestamp).toISOString(),
+        },
       },
       {
         headers: {
@@ -149,23 +341,35 @@ export async function GET() {
   if (globalCache.admissionsCache) {
     // Fire-and-forget background refresh
     fetchFromGoogleSheets()
-      .then((records) => {
+      .then((tables) => {
         globalCache.admissionsCache = {
-          records,
+          tables,
           timestamp: Date.now(),
         };
-        console.log(`[Revalidation] Cache updated: ${records.length} records`);
+        const totalRecords = tables.table1.length + tables.table2.length + tables.table3.length + tables.table4.length;
+        console.log(`[Revalidation] Cache updated: ${totalRecords} total records`);
       })
       .catch((err) => {
         console.error("[Revalidation] Failed to refresh:", err instanceof Error ? err.message : err);
       });
 
+    const { tables, timestamp } = globalCache.admissionsCache;
+    const totalRecords = tables.table1.length + tables.table2.length + tables.table3.length + tables.table4.length;
     return NextResponse.json(
       {
-        records: globalCache.admissionsCache.records,
-        count: globalCache.admissionsCache.records.length,
+        tables,
+        count: totalRecords,
         source: "google-sheets",
-        timestamp: new Date(globalCache.admissionsCache.timestamp).toISOString(),
+        timestamp: new Date(timestamp).toISOString(),
+        dataQuality: {
+          recordCounts: {
+            table1: tables.table1.length,
+            table2: tables.table2.length,
+            table3: tables.table3.length,
+            table4: tables.table4.length,
+          },
+          lastChecked: new Date(timestamp).toISOString(),
+        },
       },
       {
         headers: {
@@ -177,17 +381,27 @@ export async function GET() {
 
   // 3. Cold start (no cache at all): block once, fetch live, populate cache
   try {
-    const records = await fetchFromGoogleSheets();
+    const tables = await fetchFromGoogleSheets();
     globalCache.admissionsCache = {
-      records,
+      tables,
       timestamp: now,
     };
+    const totalRecords = tables.table1.length + tables.table2.length + tables.table3.length + tables.table4.length;
     return NextResponse.json(
       {
-        records,
-        count: records.length,
+        tables,
+        count: totalRecords,
         source: "google-sheets",
         timestamp: new Date(now).toISOString(),
+        dataQuality: {
+          recordCounts: {
+            table1: tables.table1.length,
+            table2: tables.table2.length,
+            table3: tables.table3.length,
+            table4: tables.table4.length,
+          },
+          lastChecked: new Date(now).toISOString(),
+        },
       },
       {
         headers: {
@@ -195,7 +409,7 @@ export async function GET() {
         },
       }
     );
-  } catch (err) {
+  } catch {
     // No cache exists AND Sheets failed -> 500
     return NextResponse.json(
       { error: "Failed to fetch initial data from Google Sheets" },
