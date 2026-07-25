@@ -109,11 +109,6 @@ export default function DashboardTabs() {
     return [...new Set(data.map((r) => r.nationality).filter(Boolean))].sort();
   }, [tables, activeTab]);
 
-  const genderCounts = useMemo(() => ({
-    "ذكر": activeTableData.filter((r) => r.gender === "ذكر").length,
-    "أنثى": activeTableData.filter((r) => r.gender === "أنثى").length,
-  }), [activeTableData]);
-
   const filteredData = useMemo(() =>
     activeTableData.filter((r) =>
       matchesFilters(r, {
@@ -126,6 +121,11 @@ export default function DashboardTabs() {
     ),
     [activeTableData, searchQuery, campusFilter, majorFilter, nationalityFilter, genderFilter]
   );
+
+  const genderCounts = useMemo(() => ({
+    "ذكر": filteredData.filter((r) => r.gender === "ذكر").length,
+    "أنثى": filteredData.filter((r) => r.gender === "أنثى").length,
+  }), [filteredData]);
 
   const activeFiltersCount = useMemo(() =>
     [campusFilter, majorFilter, nationalityFilter, genderFilter, searchQuery].filter(Boolean).length,
@@ -166,13 +166,13 @@ export default function DashboardTabs() {
     if (!tables) return <EmptyState loading={false} />;
     switch (tabId) {
       case "majors-nationalities":
-        return <MajorsNationalitiesTab data={tables.table1} sortDir={sortDir} />;
+        return <MajorsNationalitiesTab data={filteredData as Table1Record[]} sortDir={sortDir} />;
       case "nationalities-majors":
-        return <NationalitiesMajorsTab data={tables.table2} sortDir={sortDir} />;
+        return <NationalitiesMajorsTab data={filteredData as Table2Record[]} sortDir={sortDir} />;
       case "nationalities":
-        return <NationalitiesTab data={tables.table3} sortDir={sortDir} />;
+        return <NationalitiesTab data={filteredData as Table3Record[]} sortDir={sortDir} />;
       case "majors":
-        return <MajorsTab data={tables.table4} sortDir={sortDir} />;
+        return <MajorsTab data={filteredData as Table4Record[]} sortDir={sortDir} />;
       default:
         return <EmptyState loading={false} />;
     }
