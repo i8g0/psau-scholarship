@@ -25,7 +25,7 @@ export default function DisclaimerModal({ show, onDismiss }: DisclaimerModalProp
         <div className="text-center space-y-2">
           <div className="flex items-center justify-between mb-4">
             <Image
-              src="/dafaa25-logo.jpg"
+              src="/dafaa26-logo.png"
               alt="شعار الدفعة"
               className="w-14 h-14 rounded-full object-cover"
               width={56}
