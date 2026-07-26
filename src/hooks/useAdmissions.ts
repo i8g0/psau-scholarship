@@ -37,7 +37,9 @@ export function useAdmissions(): UseAdmissionsReturn {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to fetch admissions data";
       setError(errorMessage);
-      console.error("[Admissions Hook] Failed to fetch:", errorMessage);
+      if (process.env.NODE_ENV !== "production") {
+        console.error("[Admissions Hook] Failed to fetch:", errorMessage);
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);

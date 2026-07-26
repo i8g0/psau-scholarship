@@ -342,59 +342,139 @@ if (typeof globalCache.admissionsCache === "undefined") {
 }
 
 // ==========================================
+// CORS — allow configurable origins for development
+// ==========================================
+function getCorsHeaders(request: NextRequest): Record<string, string> {
+  const isDev = process.env.NODE_ENV === "development";
+  const origin = request.headers.get("origin") || "";
+  const allowedOrigins = isDev
+    ? process.env.CORS_ORIGINS?.split(",") ?? [origin || "http://localhost:3000"]
+    : [];
+
+  const allowOrigin = isDev && allowedOrigins.some((o) => origin.startsWith(o))
+    ? origin
+    : "";
+
+  return {
+    ...(allowOrigin ? { "Access-Control-Allow-Origin": allowOrigin } : {}),
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-CSRF-Token",
+    "Access-Control-Allow-Credentials": "true",
+    "Vary": "Origin",
+  };
+}
+
+function addCorsToResponse(
+  request: NextRequest,
+  data: unknown,
+  status: number,
+  extraHeaders: Record<string, string> = {}
+) {
+  const corsHeaders = getCorsHeaders(request);
+  return NextResponse.json(data, {
+    status,
+    headers: { ...corsHeaders, ...extraHeaders },
+  });
+}
+
+// ==========================================
+// OPTIONS — CORS preflight
+// ==========================================
+export async function OPTIONS(request: NextRequest) {
+  const corsHeaders = getCorsHeaders(request);
+  const allowOrigin = corsHeaders["Access-Control-Allow-Origin"] || "";
+  if (!allowOrigin) {
+    return new NextResponse(null, { status: 204 });
+  }
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      ...corsHeaders,
+      "Access-Control-Max-Age": "86400",
+    },
+  });
+}
+
+// ==========================================
 // GET Handler: Always returns cache (or cold-start fetches once)
 // ==========================================
+const CACHE_AGE = 5 * 60 * 1000; // 5 minutes
+
+function clientIp(request: NextRequest): string {
+  return (
+    request.headers.get("x-real-ip") ??
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    "unknown"
+  );
+}
+
+function respondWithTables(
+  request: NextRequest,
+  tables: AllTablesData,
+  timestamp: number,
+  status: number
+) {
+  const totalRecords =
+    tables.table1.length +
+    tables.table2.length +
+    tables.table3.length +
+    tables.table4.length;
+
+  return addCorsToResponse(
+    request,
+    {
+      tables,
+      count: totalRecords,
+      source: "google-sheets",
+      timestamp: new Date(timestamp).toISOString(),
+      dataQuality: {
+        recordCounts: {
+          table1: tables.table1.length,
+          table2: tables.table2.length,
+          table3: tables.table3.length,
+          table4: tables.table4.length,
+        },
+        lastChecked: new Date(timestamp).toISOString(),
+      },
+    },
+    status,
+    { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" }
+  );
+}
+
 export async function GET(request: NextRequest) {
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const ip = clientIp(request);
   if (isRateLimited(ip)) {
-    return NextResponse.json(
+    return addCorsToResponse(
+      request,
       { error: "Too many requests. Please try again later." },
-      { status: 429 }
+      429
     );
   }
 
   const now = Date.now();
-  const cacheAge = 5 * 60 * 1000; // 5 minutes
 
   // 1. Cache exists and is fresh -> return immediately
-  if (globalCache.admissionsCache && now - globalCache.admissionsCache.timestamp < cacheAge) {
-    const { tables, timestamp } = globalCache.admissionsCache;
-    const totalRecords = tables.table1.length + tables.table2.length + tables.table3.length + tables.table4.length;
-    return NextResponse.json(
-      {
-        tables,
-        count: totalRecords,
-        source: "google-sheets",
-        timestamp: new Date(timestamp).toISOString(),
-        dataQuality: {
-          recordCounts: {
-            table1: tables.table1.length,
-            table2: tables.table2.length,
-            table3: tables.table3.length,
-            table4: tables.table4.length,
-          },
-          lastChecked: new Date(timestamp).toISOString(),
-        },
-      },
-      {
-        headers: {
-          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
-        },
-      }
+  if (globalCache.admissionsCache && now - globalCache.admissionsCache.timestamp < CACHE_AGE) {
+    return respondWithTables(
+      request,
+      globalCache.admissionsCache.tables,
+      globalCache.admissionsCache.timestamp,
+      200
     );
   }
 
   // 2. Cache exists but stale -> serve stale data, trigger background refresh
   if (globalCache.admissionsCache) {
-    // Fire-and-forget background refresh
     fetchFromGoogleSheets()
       .then((tables) => {
-        globalCache.admissionsCache = {
-          tables,
-          timestamp: Date.now(),
-        };
+        globalCache.admissionsCache = { tables, timestamp: Date.now() };
         if (process.env.NODE_ENV !== "production") {
-          const totalRecords = tables.table1.length + tables.table2.length + tables.table3.length + tables.table4.length;
+          const totalRecords =
+            tables.table1.length +
+            tables.table2.length +
+            tables.table3.length +
+            tables.table4.length;
           console.log(`[Revalidation] Cache updated: ${totalRecords} total records`);
         }
       })
@@ -404,67 +484,24 @@ export async function GET(request: NextRequest) {
         }
       });
 
-    const { tables, timestamp } = globalCache.admissionsCache;
-    const totalRecords = tables.table1.length + tables.table2.length + tables.table3.length + tables.table4.length;
-    return NextResponse.json(
-      {
-        tables,
-        count: totalRecords,
-        source: "google-sheets",
-        timestamp: new Date(timestamp).toISOString(),
-        dataQuality: {
-          recordCounts: {
-            table1: tables.table1.length,
-            table2: tables.table2.length,
-            table3: tables.table3.length,
-            table4: tables.table4.length,
-          },
-          lastChecked: new Date(timestamp).toISOString(),
-        },
-      },
-      {
-        headers: {
-          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
-        },
-      }
+    return respondWithTables(
+      request,
+      globalCache.admissionsCache.tables,
+      globalCache.admissionsCache.timestamp,
+      200
     );
   }
 
   // 3. Cold start (no cache at all): block once, fetch live, populate cache
   try {
     const tables = await fetchFromGoogleSheets();
-    globalCache.admissionsCache = {
-      tables,
-      timestamp: now,
-    };
-    const totalRecords = tables.table1.length + tables.table2.length + tables.table3.length + tables.table4.length;
-    return NextResponse.json(
-      {
-        tables,
-        count: totalRecords,
-        source: "google-sheets",
-        timestamp: new Date(now).toISOString(),
-        dataQuality: {
-          recordCounts: {
-            table1: tables.table1.length,
-            table2: tables.table2.length,
-            table3: tables.table3.length,
-            table4: tables.table4.length,
-          },
-          lastChecked: new Date(now).toISOString(),
-        },
-      },
-      {
-        headers: {
-          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
-        },
-      }
-    );
+    globalCache.admissionsCache = { tables, timestamp: now };
+    return respondWithTables(request, tables, now, 200);
   } catch {
-    // No cache exists AND Sheets failed -> 500
-    return NextResponse.json(
+    return addCorsToResponse(
+      request,
       { error: "Failed to fetch initial data from Google Sheets" },
-      { status: 500 }
+      500
     );
   }
 }
