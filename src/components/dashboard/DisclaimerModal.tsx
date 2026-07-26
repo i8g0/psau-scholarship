@@ -30,7 +30,6 @@ export default function DisclaimerModal({ show, onDismiss }: DisclaimerModalProp
               className="w-14 h-14 rounded-full object-cover"
               width={56}
               height={56}
-              unoptimized
             />
             <Image
               src="/psau-logo.jpg"
@@ -38,7 +37,6 @@ export default function DisclaimerModal({ show, onDismiss }: DisclaimerModalProp
               className="w-14 h-14 rounded-full object-cover"
               width={56}
               height={56}
-              unoptimized
             />
           </div>
           <h2 id="disclaimer-title" className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>

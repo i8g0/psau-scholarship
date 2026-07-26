@@ -5,8 +5,8 @@ import dns from "dns";
 // Fix Node.js IPv6 DNS resolution delay on Windows
 try {
   dns.setDefaultResultOrder("ipv4first");
-} catch (e) {
-  console.warn("[DNS] Could not set IPv4 first order:", e);
+} catch {
+  // Non-critical: IPv6 fallback is fine
 }
 
 export const revalidate = 300; // 5 minutes
@@ -71,6 +71,7 @@ const globalCache = globalThis as unknown as {
 // Simple in-memory rate limiter (per-process, resets on restart)
 const RATE_LIMIT_WINDOW = 60_000; // 1 minute
 const RATE_LIMIT_MAX = 100; // requests per window
+const RATE_LIMIT_CLEANUP = 60_000; // prune stale entries every 60s
 const requestLog = new Map<string, number[]>();
 
 function isRateLimited(ip: string): boolean {
@@ -82,6 +83,19 @@ function isRateLimited(ip: string): boolean {
   requestLog.set(ip, recent);
   return recent.length > RATE_LIMIT_MAX;
 }
+
+// Periodic cleanup of stale IP entries to prevent unbounded Map growth
+setInterval(() => {
+  const cutoff = Date.now() - RATE_LIMIT_WINDOW;
+  for (const [ip, timestamps] of requestLog) {
+    const recent = timestamps.filter((t) => t > cutoff);
+    if (recent.length === 0) {
+      requestLog.delete(ip);
+    } else {
+      requestLog.set(ip, recent);
+    }
+  }
+}, RATE_LIMIT_CLEANUP);
 
 // ==========================================
 // Google Sheets Fetcher with 5s Strict Timeout
@@ -292,7 +306,7 @@ async function fetchFromGoogleSheets(): Promise<AllTablesData> {
     }
   }
 
-  if (warnings.length > 0) {
+  if (warnings.length > 0 && process.env.NODE_ENV !== "production") {
     console.warn(`[Data Quality] ${warnings.length} corrections applied:`, warnings);
   }
 
@@ -314,10 +328,14 @@ if (typeof globalCache.admissionsCache === "undefined") {
         tables,
         timestamp: Date.now(),
       };
-      const totalRecords = tables.table1.length + tables.table2.length + tables.table3.length + tables.table4.length;
-      console.log(`[Poller] Cache updated: ${totalRecords} total records at ${new Date().toISOString()}`);
+      if (process.env.NODE_ENV !== "production") {
+        const totalRecords = tables.table1.length + tables.table2.length + tables.table3.length + tables.table4.length;
+        console.log(`[Poller] Cache updated: ${totalRecords} total records at ${new Date().toISOString()}`);
+      }
     } catch (err) {
-      console.error("[Poller] Failed to refresh from Sheets:", err instanceof Error ? err.message : err);
+      if (process.env.NODE_ENV !== "production") {
+        console.error("[Poller] Failed to refresh from Sheets:", err instanceof Error ? err.message : err);
+      }
       // Keep last good cache - do not clear it
     }
   }, POLL_INTERVAL);
@@ -375,11 +393,15 @@ export async function GET(request: NextRequest) {
           tables,
           timestamp: Date.now(),
         };
-        const totalRecords = tables.table1.length + tables.table2.length + tables.table3.length + tables.table4.length;
-        console.log(`[Revalidation] Cache updated: ${totalRecords} total records`);
+        if (process.env.NODE_ENV !== "production") {
+          const totalRecords = tables.table1.length + tables.table2.length + tables.table3.length + tables.table4.length;
+          console.log(`[Revalidation] Cache updated: ${totalRecords} total records`);
+        }
       })
       .catch((err) => {
-        console.error("[Revalidation] Failed to refresh:", err instanceof Error ? err.message : err);
+        if (process.env.NODE_ENV !== "production") {
+          console.error("[Revalidation] Failed to refresh:", err instanceof Error ? err.message : err);
+        }
       });
 
     const { tables, timestamp } = globalCache.admissionsCache;

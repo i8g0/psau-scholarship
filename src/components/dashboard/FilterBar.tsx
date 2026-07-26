@@ -127,7 +127,7 @@ export default function FilterBar({
           {activeFiltersCount > 0 && (
             <span
               className="w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center text-white"
-              style={{ background: "var(--color-primary)" }}
+              style={{ background: "var(--olive-600)" }}
             >
               {activeFiltersCount}
             </span>
@@ -249,9 +249,9 @@ export default function FilterBar({
             {activeFiltersSummary.map((filter) => {
               const getBadgeStyle = (key: string): React.CSSProperties => {
                 switch (key) {
-                  case 'campus': return { background: "rgba(0,119,188,0.1)", color: "var(--color-primary)", border: "1px solid rgba(0,119,188,0.2)" };
-                  case 'major': return { background: "rgba(0,152,102,0.1)", color: "var(--color-secondary)", border: "1px solid rgba(0,152,102,0.2)" };
-                  case 'nationality': return { background: "rgba(0,119,188,0.1)", color: "var(--color-primary)", border: "1px solid rgba(0,119,188,0.2)" };
+                  case 'campus': return { background: "rgba(0,119,188,0.1)", color: "var(--stat-cyan)", border: "1px solid rgba(0,119,188,0.2)" };
+                  case 'major': return { background: "rgba(0,152,102,0.1)", color: "var(--stat-emerald)", border: "1px solid rgba(0,152,102,0.2)" };
+                  case 'nationality': return { background: "rgba(0,119,188,0.1)", color: "var(--stat-cyan)", border: "1px solid rgba(0,119,188,0.2)" };
                   case 'gender': return genderFilter === "ذكر" 
                     ? { background: "var(--male-badge)", color: "var(--male-text)", border: "1px solid var(--male-border)" }
                     : { background: "var(--female-badge)", color: "var(--female-text)", border: "1px solid var(--female-border)" };

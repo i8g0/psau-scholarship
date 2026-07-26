@@ -11,9 +11,9 @@ interface StatsBarProps {
 }
 
 const statsConfig = [
-  { icon: Building2, label: "الفروع", value: "campuses", color: "var(--color-primary)" },
-  { icon: Globe2, label: "الجنسيات", value: "nationalities", color: "var(--color-secondary)" },
-  { icon: BookOpen, label: "التخصصات", value: "majors", color: "var(--color-warning)" },
+  { icon: Building2, label: "الفروع", value: "campuses", color: "var(--stat-emerald)" },
+  { icon: Globe2, label: "الجنسيات", value: "nationalities", color: "var(--stat-cyan)" },
+  { icon: BookOpen, label: "التخصصات", value: "majors", color: "var(--stat-gold)" },
 ];
 
 export default function StatsBar({ total, campuses, nationalities, majors, loading }: StatsBarProps) {

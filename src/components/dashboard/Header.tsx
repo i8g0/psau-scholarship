@@ -22,7 +22,6 @@ export default function Header({ onRefresh, refreshing, onToggleDarkMode, darkMo
             className="w-11 h-11 rounded-full object-cover flex-shrink-0 ring-2 ring-white/20"
             width={44}
             height={44}
-            unoptimized
           />
           <div>
             <div className="flex items-center gap-2.5">

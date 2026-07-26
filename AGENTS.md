@@ -21,7 +21,8 @@ Google Sheets (Summery!A:AB) → /api/admissions → 4 pivot tables
 
 - **API** (`src/app/api/admissions/route.ts`): Reads `Summery!A:AB`, parses 4 non-contiguous tables. Invalid avgScore (<0 or >100) corrected to `(max+min)/2`. Zero-score rows discarded. 5s timeout on fetch. 5-min background poller (`setInterval` on module load) + in-memory `globalThis` cache. `revalidate = 300`.
   - GET has 3 paths: fresh cache → return; stale cache → return stale + background refresh; no cache (cold start) → block once and fetch live.
-  - In-memory rate limiter: 100 req/min per IP via `x-forwarded-for`. Returns 429 beyond limit.
+  - In-memory rate limiter: 100 req/min per IP via `x-forwarded-for`. Returns 429 beyond limit. Stale IP entries pruned every 60s to prevent unbounded Map growth.
+  - Console logging guarded by `process.env.NODE_ENV !== "production"` to avoid data leakage in production logs.
   - Credential validation: specific error per missing env var (not a generic message).
 - **Hook** (`src/hooks/useAdmissions.ts`): Returns `{ tables, loading, error, lastUpdate, refreshing, fetchData, timeAgo }`.
 
@@ -41,7 +42,7 @@ Separators at H(7), P(15), V(21). Each table parsed with `row.length >= N` guard
 ## Architecture
 
 - **Server Component** (`src/app/page.tsx`): Renders `<DashboardTabs />`
-- **Client Orchestrator** (`src/components/dashboard/DashboardTabs.tsx`): State, filters, tab routing, sort toggle. Owns **all** filter state; computes `filteredData` via `matchesFilters` and passes it to tab views.
+- **Client Orchestrator** (`src/components/dashboard/DashboardTabs.tsx`): Owns **all** filter state; computes `filteredData` via `matchesFilters` and passes it to tab views.
 - **Tab Views** (`src/components/dashboard/views/`): Pure renderers — never filter internally.
   - `MajorsNationalitiesTab` — Campus→Major→Nationality→Gender
   - `NationalitiesMajorsTab` — Nationality→Campus→Major→Gender
@@ -72,15 +73,15 @@ Two-mode CSS custom-property system (not Tailwind theme colors):
 - `:root` = light mode (white cards, emerald `--olive-*` scale, warm `--beige-*` scale)
 - `.dark` = dark mode (navy glassmorphism + neon emerald/cyan/gold)
 
-Components should use: `--bg-body/card/header/input`, `--text-primary/secondary/muted/accent`, `--male/female-accent/text`, `--score-low/avg/high`, `--chip-active-bg/border/text`, `--border-default`.
+Components should use: `--bg-body/card/header/input`, `--text-primary/secondary/muted/accent`, `--male/female-accent/text`, `--score-low/avg/high`, `--chip-active-bg/border/text`, `--border-default`, `--stat-emerald/cyan/gold`.
 
 `tailwind.config.ts` exists but is **vestigial** — Tailwind v4 (`@tailwindcss/postcss`) ignores it. All design tokens live in `globals.css` CSS custom properties.
 
 **Gotcha**: `backdrop-filter` creates a new stacking context. Can trap a child's `z-index` below a sibling that also has `backdrop-filter`. Fix: add `relative z-[some-level]` to the containing card, not by raising the dropdown's own `z-index`.
 
 ### ⚠️ `var(--color-*)` tokens — mostly undefined
-`var(--color-primary/secondary/warning/surface/text/border)` are **not defined** in `globals.css` — they silently fall through to `unset`/transparent. Only `--color-danger` is defined (in `:root` only). Use the real `--olive-*` / `--bg-*` / `--text-*` / `--chip-active-*` tokens instead.
-- Known remaining `var(--color-*)` usages: `FilterBar.tsx` (filter badge + chips), `Footer.tsx` (background/border/text), `StatsBar.tsx` (3 stat card colors).
+`var(--color-primary/secondary/warning/surface/text/border)` are **not defined** in `globals.css` — they silently fall through to `unset`/transparent. Only `--color-danger` is defined (global). Use the real `--olive-*` / `--bg-*` / `--text-*` / `--chip-active-*` / `--stat-*` tokens instead.
+No remaining usages in the codebase.
 
 ### Known regressions to guard
 - **`.input-field-search`**: Must provide `padding-right: 56px; padding-left: 40px` (RTL). Class was dropped once during a CSS refactor, causing search icon/text overlap in `FilterBar.tsx`.
@@ -99,14 +100,6 @@ Two client-side modals with same overlay pattern (`fixed inset-0 z-[100]`, `var(
 - **NazaaModal** (`showNazaaModal`, triggered by header button "ما هو مقياس النزعة؟").
 
 Both managed in `DashboardTabs.tsx` with body scroll lock while open.
-
-## Recent Changes
-
-- **Security headers** added to `next.config.ts`: CSP (includes Google Fonts origins), X-Frame-Options, X-Content-Type-Options, Referrer-Policy.
-- **Rate limiter** (100 req/min/IP) added to `/api/admissions`.
-- **Next.js** updated `16.2.9` → `16.2.12` (fixes SSRF, DoS, cache poisoning advisories).
-- **NazaaModal** + header button + critical-point badge added. `Header.tsx` has new `onNazaaClick` prop.
-- **DisclaimerModal** reformatted with 3 card sections, red-highlighted phrases unified with NazaaModal, deduplicated content.
 
 ## Environment (`.env.local` — gitignored)
 

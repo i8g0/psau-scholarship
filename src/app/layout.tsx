@@ -32,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl" className="h-full" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
         <link
           rel="preconnect"
           href="https://fonts.gstatic.com"
