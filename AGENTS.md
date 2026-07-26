@@ -60,7 +60,7 @@ Two paths per tab:
 
 - **RTL Arabic**: `dir="rtl"`, `lang="ar"`, IBM Plex Sans Arabic font. Arrows use `←` not `→`.
 - **Score column order**: Min | مقياس النزعة | Max. Avg label is "مقياس النزعة" (intentional, not "المتوسط").
-- **Dark mode**: Class-based (`dark` class on `<html>`), toggled in `DashboardTabs.tsx`, `localStorage` key `psau-dark-mode`. Applied on toggle + read back on mount to avoid flash.
+- **Dark mode**: Class-based (`dark` class on `<html>`), toggled in `DashboardTabs.tsx`, `localStorage` key `psau-dark-mode`. Applied on toggle + read back on mount to avoid flash. Inline script in `layout.tsx:51-55` runs before hydration to prevent flash for returning users.
 - **Gender values**: Literal strings `"ذكر"` / `"أنثى"` (Arabic).
 - **Card accent stripe**: Per-record mini-card = `className="mobile-card mb-2"` + `style={{ borderRight: "3px solid var(--male-accent|female-accent)" }}`. Not a full background fill.
 
@@ -89,6 +89,10 @@ Components should use: `--bg-body/card/header/input`, `--text-primary/secondary/
 
 - `Header.tsx`: "LIVE" badge is red + English; should be green "بث مباشر" with `badge-glow-emerald`.
 - `ScoreCards.tsx`: Tint backgrounds swapped — "الأدنى" card has green-ish BG (should be red-ish), "الأعلى" card has red-ish BG (should be green-ish).
+
+## Recent Changes
+
+- **Disclaimer modal** (`DashboardTabs.tsx`): Now shows on **every visit** (not just first visit). Removed `localStorage` read on mount and `localStorage` write on dismiss. Modal starts visible (`showDisclaimer = true`) and only hides for the current session when dismissed.
 
 ## Environment (`.env.local` — gitignored)
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useLayoutEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAdmissions } from "@/hooks/useAdmissions";
 import { TABS, SortDir, TabId, Table1Record, Table2Record, Table3Record, Table4Record, matchesFilters } from "@/types";
 import { EmptyState } from "@/components/ui";
@@ -47,7 +47,6 @@ export default function DashboardTabs() {
 
   const dismissDisclaimer = useCallback(() => {
     setShowDisclaimer(false);
-    localStorage.setItem("psau-disclaimer-seen-v2", "true");
   }, []);
 
   const toggleDarkMode = useCallback(() => {
@@ -161,11 +160,6 @@ export default function DashboardTabs() {
       document.documentElement.classList.add("dark");
     }
     requestAnimationFrame(() => setDarkMode(stored === "true"));
-  }, []);
-
-  useLayoutEffect(() => {
-    const seen = localStorage.getItem("psau-disclaimer-seen-v2") === "true";
-    if (seen) requestAnimationFrame(() => setShowDisclaimer(false));
   }, []);
 
   useEffect(() => {
