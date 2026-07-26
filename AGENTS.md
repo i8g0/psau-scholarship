@@ -120,7 +120,7 @@ Service account needs Editor access on the sheet. Deploy on Vercel; add env vars
 - **No authentication on `/api/admissions`** — Public read-only dashboard by design. Rate-limited to 100 req/min per IP.
 - **PDFs in `public/`** — Admission score PDFs are publicly shared materials with no PII.
 - **No CSRF on GET** — Only GET endpoints exist for data; no state-changing operations.
-- **`dangerouslySetInnerHTML` in `layout.tsx`** — Required for pre-hydration dark mode. CSP hash `sha256-e3C6Vof1o/mVaA6sGKlpqVnYpbtaLlThaNbu9s54LwI=` matches the exact script. `'unsafe-inline'` on `script-src` is required by Next.js App Router for RSC bootstrap inline scripts.
+- **`dangerouslySetInnerHTML` in `layout.tsx`** — Required for pre-hydration dark mode. The dark-mode script content hash is `sha256-e3C6Vof1o/mVaA6sGKlpqVnYpbtaLlThaNbu9s54LwI=` but CSP hashes + `'unsafe-inline'` are mutually exclusive in `script-src` per CSP Level 2 spec (browser silently ignores `'unsafe-inline'` when a hash/nonce is present). Next.js App Router requires `'unsafe-inline'` for RSC bootstrap scripts and `'unsafe-eval'` for its webpack runtime, so the hash cannot be enforced. Do NOT add a hash to `script-src` unless `'unsafe-inline'` is also removed — verify Next.js works with that combination first.
 
 ### Security Headers (via `next.config.ts`)
 
@@ -132,7 +132,7 @@ Service account needs Editor access on the sheet. Deploy on Vercel; add env vars
 | `Referrer-Policy` | `strict-origin-when-cross-origin` |
 | `Permissions-Policy` | `camera=(), microphone=(), geolocation=()` |
 | `Strict-Transport-Security` | `max-age=63072000; includeSubDomains; preload` |
-| `Content-Security-Policy` | See `next.config.ts` — script-src uses hash + `'unsafe-inline'` (required by Next.js App Router RSC), style-src keeps `'unsafe-inline'` for CSS custom properties |
+| `Content-Security-Policy` | See `next.config.ts` — script-src uses `'unsafe-inline'` + `'unsafe-eval'` (required by Next.js App Router RSC + webpack runtime), style-src uses `'unsafe-inline'` for CSS custom properties. Hashes and `'unsafe-inline'` are mutually exclusive per CSP Level 2 — do not add a hash unless `'unsafe-inline'` is also removed |
 
 ### Accepted Residual Risks
 

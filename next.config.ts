@@ -4,7 +4,7 @@ const isDev = process.env.NODE_ENV === "development";
 
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' 'sha256-e3C6Vof1o/mVaA6sGKlpqVnYpbtaLlThaNbu9s54LwI='`,
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: https:",
   "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com",
