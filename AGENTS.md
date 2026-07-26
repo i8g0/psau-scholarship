@@ -120,7 +120,7 @@ Service account needs Editor access on the sheet. Deploy on Vercel; add env vars
 - **No authentication on `/api/admissions`** — Public read-only dashboard by design. Rate-limited to 100 req/min per IP.
 - **PDFs in `public/`** — Admission score PDFs are publicly shared materials with no PII.
 - **No CSRF on GET** — Only GET endpoints exist for data; no state-changing operations.
-- **`dangerouslySetInnerHTML` in `layout.tsx`** — Required for pre-hydration dark mode. CSP hash `sha256-e3C6Vof1o/mVaA6sGKlpqVnYpbtaLlThaNbu9s54LwI=` matches the exact script, so `'unsafe-inline'` is not needed for scripts.
+- **`dangerouslySetInnerHTML` in `layout.tsx`** — Required for pre-hydration dark mode. CSP hash `sha256-e3C6Vof1o/mVaA6sGKlpqVnYpbtaLlThaNbu9s54LwI=` matches the exact script. `'unsafe-inline'` on `script-src` is required by Next.js App Router for RSC bootstrap inline scripts.
 
 ### Security Headers (via `next.config.ts`)
 
@@ -132,7 +132,7 @@ Service account needs Editor access on the sheet. Deploy on Vercel; add env vars
 | `Referrer-Policy` | `strict-origin-when-cross-origin` |
 | `Permissions-Policy` | `camera=(), microphone=(), geolocation=()` |
 | `Strict-Transport-Security` | `max-age=63072000; includeSubDomains; preload` |
-| `Content-Security-Policy` | See `next.config.ts` — script-src uses hash, style-src keeps `'unsafe-inline'` for CSS custom properties |
+| `Content-Security-Policy` | See `next.config.ts` — script-src uses hash + `'unsafe-inline'` (required by Next.js App Router RSC), style-src keeps `'unsafe-inline'` for CSS custom properties |
 
 ### Accepted Residual Risks
 
