@@ -101,6 +101,7 @@ Both managed in `DashboardTabs.tsx` with body scroll lock while open.
 ## Recent Changes
 
 - **NazaaModal** + header button + critical-point badge added. Modeled after DisclaimerModal. `Header.tsx` has new `onNazaaClick` prop. Badge "النقطة الحرجة لمقياس النزعة: 2" sits opposite "آخر تحديث" in the stats bar row, orange (`#f97316`) pill style.
+- **DisclaimerModal** reformatted with 3 card sections (مصدر البيانات, ملاحظات, كلمة أخيرة), red-highlighted phrases unified with NazaaModal, and deduplicated content.
 
 ## Environment (`.env.local` — gitignored)
 
