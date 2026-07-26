@@ -2,7 +2,7 @@
 
 ## Stack & Commands
 
-Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4 (`@tailwindcss/postcss`), `googleapis`, `lucide-react`, `recharts`.
+Next.js 16.2 (App Router), React 19, TypeScript, Tailwind CSS v4 (`@tailwindcss/postcss`), `googleapis`, `lucide-react`, `recharts`.
 
 ```
 npm run dev        # next dev --webpack (no turbopack)
@@ -21,6 +21,8 @@ Google Sheets (Summery!A:AB) → /api/admissions → 4 pivot tables
 
 - **API** (`src/app/api/admissions/route.ts`): Reads `Summery!A:AB`, parses 4 non-contiguous tables. Invalid avgScore (<0 or >100) corrected to `(max+min)/2`. Zero-score rows discarded. 5s timeout on fetch. 5-min background poller (`setInterval` on module load) + in-memory `globalThis` cache. `revalidate = 300`.
   - GET has 3 paths: fresh cache → return; stale cache → return stale + background refresh; no cache (cold start) → block once and fetch live.
+  - In-memory rate limiter: 100 req/min per IP via `x-forwarded-for`. Returns 429 beyond limit.
+  - Credential validation: specific error per missing env var (not a generic message).
 - **Hook** (`src/hooks/useAdmissions.ts`): Returns `{ tables, loading, error, lastUpdate, refreshing, fetchData, timeAgo }`.
 
 No auth, no write, no tests, no CI/CD workflows.
@@ -100,8 +102,11 @@ Both managed in `DashboardTabs.tsx` with body scroll lock while open.
 
 ## Recent Changes
 
-- **NazaaModal** + header button + critical-point badge added. Modeled after DisclaimerModal. `Header.tsx` has new `onNazaaClick` prop. Badge "النقطة الحرجة لمقياس النزعة: 2" sits opposite "آخر تحديث" in the stats bar row, orange (`#f97316`) pill style.
-- **DisclaimerModal** reformatted with 3 card sections (مصدر البيانات, ملاحظات, كلمة أخيرة), red-highlighted phrases unified with NazaaModal, and deduplicated content.
+- **Security headers** added to `next.config.ts`: CSP (includes Google Fonts origins), X-Frame-Options, X-Content-Type-Options, Referrer-Policy.
+- **Rate limiter** (100 req/min/IP) added to `/api/admissions`.
+- **Next.js** updated `16.2.9` → `16.2.12` (fixes SSRF, DoS, cache poisoning advisories).
+- **NazaaModal** + header button + critical-point badge added. `Header.tsx` has new `onNazaaClick` prop.
+- **DisclaimerModal** reformatted with 3 card sections, red-highlighted phrases unified with NazaaModal, deduplicated content.
 
 ## Environment (`.env.local` — gitignored)
 
