@@ -1,11 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { google } from "googleapis";
 import dns from "dns";
 
 // Fix Node.js IPv6 DNS resolution delay on Windows
 try {
   dns.setDefaultResultOrder("ipv4first");
-} catch {}
+} catch (e) {
+  console.warn("[DNS] Could not set IPv4 first order:", e);
+}
 
 export const revalidate = 300; // 5 minutes
 
@@ -66,6 +68,21 @@ const globalCache = globalThis as unknown as {
   admissionsCache?: CacheItem;
 };
 
+// Simple in-memory rate limiter (per-process, resets on restart)
+const RATE_LIMIT_WINDOW = 60_000; // 1 minute
+const RATE_LIMIT_MAX = 100; // requests per window
+const requestLog = new Map<string, number[]>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const windowStart = now - RATE_LIMIT_WINDOW;
+  const timestamps = requestLog.get(ip) ?? [];
+  const recent = timestamps.filter((t) => t > windowStart);
+  recent.push(now);
+  requestLog.set(ip, recent);
+  return recent.length > RATE_LIMIT_MAX;
+}
+
 // ==========================================
 // Google Sheets Fetcher with 5s Strict Timeout
 // ==========================================
@@ -74,8 +91,12 @@ async function fetchFromGoogleSheets(): Promise<AllTablesData> {
   const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
   const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
 
-  if (!clientEmail || !privateKey || !spreadsheetId) {
-    throw new Error("Missing Google Service Account credentials in environment variables");
+  const missing: string[] = [];
+  if (!clientEmail) missing.push("GOOGLE_CLIENT_EMAIL");
+  if (!privateKey) missing.push("GOOGLE_PRIVATE_KEY");
+  if (!spreadsheetId) missing.push("SPREADSHEET_ID");
+  if (missing.length > 0) {
+    throw new Error(`Missing credentials: ${missing.join(", ")}`);
   }
 
   const auth = new google.auth.JWT({
@@ -305,7 +326,15 @@ if (typeof globalCache.admissionsCache === "undefined") {
 // ==========================================
 // GET Handler: Always returns cache (or cold-start fetches once)
 // ==========================================
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  if (isRateLimited(ip)) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      { status: 429 }
+    );
+  }
+
   const now = Date.now();
   const cacheAge = 5 * 60 * 1000; // 5 minutes
 
