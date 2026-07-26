@@ -8,9 +8,10 @@ interface HeaderProps {
   refreshing: boolean;
   onToggleDarkMode: () => void;
   darkMode: boolean;
+  onNazaaClick: () => void;
 }
 
-export default function Header({ onRefresh, refreshing, onToggleDarkMode, darkMode }: HeaderProps) {
+export default function Header({ onRefresh, refreshing, onToggleDarkMode, darkMode, onNazaaClick }: HeaderProps) {
   return (
     <header className="glass-header py-4 px-4 md:px-6" style={{ borderBottom: "1px solid var(--border-default)" }}>
       <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -47,6 +48,21 @@ export default function Header({ onRefresh, refreshing, onToggleDarkMode, darkMo
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={onNazaaClick}
+            className="px-2.5 py-1.5 rounded-lg text-xs md:text-sm font-bold transition-all duration-200 whitespace-nowrap"
+            style={{
+              color: "#ffffff",
+              background: "rgba(255,255,255,0.15)",
+              border: "1px solid rgba(255,255,255,0.3)",
+              touchAction: "manipulation",
+            }}
+            title="ما هو مقياس النزعة؟"
+            aria-label="ما هو مقياس النزعة؟"
+          >
+            ما هو مقياس النزعة؟
+          </button>
+
           <button
             onClick={onRefresh}
             disabled={refreshing}

@@ -11,6 +11,7 @@ import MajorsTab from "@/components/dashboard/views/MajorsTab";
 import StatsBar from "@/components/dashboard/StatsBar";
 import FilterBar from "@/components/dashboard/FilterBar";
 import DisclaimerModal from "@/components/dashboard/DisclaimerModal";
+import NazaaModal from "@/components/dashboard/NazaaModal";
 import Header from "@/components/dashboard/Header";
 import Footer from "@/components/dashboard/Footer";
 import MarqueeBar from "@/components/dashboard/MarqueeBar";
@@ -19,6 +20,7 @@ export default function DashboardTabs() {
   const { tables, loading, refreshing, fetchData, timeAgo } = useAdmissions();
 
   const [showDisclaimer, setShowDisclaimer] = useState(true);
+  const [showNazaaModal, setShowNazaaModal] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>("majors-nationalities");
   const [sortDir, setSortDir] = useState<SortDir>("none");
@@ -48,6 +50,9 @@ export default function DashboardTabs() {
   const dismissDisclaimer = useCallback(() => {
     setShowDisclaimer(false);
   }, []);
+
+  const openNazaaModal = useCallback(() => setShowNazaaModal(true), []);
+  const closeNazaaModal = useCallback(() => setShowNazaaModal(false), []);
 
   const toggleDarkMode = useCallback(() => {
     setDarkMode((prev) => {
@@ -191,12 +196,14 @@ export default function DashboardTabs() {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--bg-body)" }} dir="rtl">
       <DisclaimerModal show={showDisclaimer} onDismiss={dismissDisclaimer} />
+      <NazaaModal show={showNazaaModal} onDismiss={closeNazaaModal} />
 
       <Header
         onRefresh={() => fetchData(true)}
         refreshing={refreshing}
         onToggleDarkMode={toggleDarkMode}
         darkMode={darkMode}
+        onNazaaClick={openNazaaModal}
       />
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 md:px-6 py-5 space-y-5 pb-16">
@@ -210,6 +217,13 @@ export default function DashboardTabs() {
 
         <div className="flex items-center justify-between text-xs" style={{ color: "var(--text-muted)" }}>
           <span>{timeAgo && `آخر تحديث: ${timeAgo}`}</span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold" style={{
+            background: "rgba(249, 115, 22, 0.2)",
+            border: "1px solid rgba(249, 115, 22, 0.4)",
+            color: "#f97316",
+          }}>
+            النقطة الحرجة لمقياس النزعة: 2
+          </span>
         </div>
 
         <div className="tab-bar">

@@ -23,7 +23,7 @@ Google Sheets (Summery!A:AB) → /api/admissions → 4 pivot tables
   - GET has 3 paths: fresh cache → return; stale cache → return stale + background refresh; no cache (cold start) → block once and fetch live.
 - **Hook** (`src/hooks/useAdmissions.ts`): Returns `{ tables, loading, error, lastUpdate, refreshing, fetchData, timeAgo }`.
 
-No auth, no write, no CI/CD workflows.
+No auth, no write, no tests, no CI/CD workflows.
 
 ## Sheet Layout
 
@@ -90,9 +90,17 @@ Components should use: `--bg-body/card/header/input`, `--text-primary/secondary/
 - `Header.tsx`: "LIVE" badge is red + English; should be green "بث مباشر" with `badge-glow-emerald`.
 - `ScoreCards.tsx`: Tint backgrounds swapped — "الأدنى" card has green-ish BG (should be red-ish), "الأعلى" card has red-ish BG (should be green-ish).
 
+## Modals
+
+Two client-side modals with same overlay pattern (`fixed inset-0 z-[100]`, `var(--bg-overlay)`, `card-elevated`, `animate-fade-in-scale`):
+- **DisclaimerModal** (`showDisclaimer`, shown on every visit, dismissed for session only — no localStorage).
+- **NazaaModal** (`showNazaaModal`, triggered by header button "ما هو مقياس النزعة؟").
+
+Both managed in `DashboardTabs.tsx` with body scroll lock while open.
+
 ## Recent Changes
 
-- **Disclaimer modal** (`DashboardTabs.tsx`): Now shows on **every visit** (not just first visit). Removed `localStorage` read on mount and `localStorage` write on dismiss. Modal starts visible (`showDisclaimer = true`) and only hides for the current session when dismissed.
+- **NazaaModal** + header button + critical-point badge added. Modeled after DisclaimerModal. `Header.tsx` has new `onNazaaClick` prop. Badge "النقطة الحرجة لمقياس النزعة: 2" sits opposite "آخر تحديث" in the stats bar row, orange (`#f97316`) pill style.
 
 ## Environment (`.env.local` — gitignored)
 
