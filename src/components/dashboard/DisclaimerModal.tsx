@@ -12,16 +12,17 @@ export default function DisclaimerModal({ show, onDismiss }: DisclaimerModalProp
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
       style={{
         background: "var(--bg-overlay)",
         WebkitOverflowScrolling: "touch",
+        overflowX: "hidden",
       }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="disclaimer-title"
     >
-      <div className="card-elevated max-w-lg w-full p-6 sm:p-8 space-y-5 max-h-[90vh] overflow-y-auto my-auto animate-fade-in-scale">
+      <div className="card-elevated max-w-lg w-full p-5 sm:p-8 space-y-5 max-h-[90vh] overflow-y-auto my-auto animate-fade-in-scale">
         <div className="text-center space-y-2">
           <div className="flex items-center justify-between mb-4">
             <Image
