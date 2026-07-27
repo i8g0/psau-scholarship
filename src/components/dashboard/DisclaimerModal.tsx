@@ -83,6 +83,38 @@ export default function DisclaimerModal({ show, onDismiss }: DisclaimerModalProp
           <div
             className="p-4 rounded-xl space-y-3"
             style={{
+              background: "rgba(59, 130, 246, 0.06)",
+              border: "1px solid rgba(59, 130, 246, 0.2)",
+            }}
+          >
+            <p className="font-bold" style={{ color: "#3b82f6" }}>📝 استبيان الطلاب المقبولين</p>
+            <ul className="list-disc pr-5 space-y-2">
+              <li>
+                إذا كنت من الطلاب المقبولين في جامعة الأمير سطام ولم تقم بتعبئة الاستبيان بعد،
+                نرجو منك تعبئته من خلال الرابط أدناه:
+              </li>
+            </ul>
+            <div className="text-center pt-2">
+              <a
+                href={process.env.NEXT_PUBLIC_DISCLAIMER_FORM_URL || "https://forms.gle/nvRGFGxC611WHja1A"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block py-3 px-6 rounded-xl font-bold text-base transition-all duration-200 min-h-[44px]"
+                style={{
+                  background: "var(--olive-600)",
+                  color: "#ffffff",
+                  boxShadow: "0 4px 18px rgba(16, 185, 129, 0.35)",
+                  touchAction: "manipulation",
+                }}
+              >
+                رابط الاستبيان ←
+              </a>
+            </div>
+          </div>
+
+          <div
+            className="p-4 rounded-xl space-y-3"
+            style={{
               background: "rgba(245, 158, 11, 0.06)",
               border: "1px solid rgba(245, 158, 11, 0.2)",
             }}
