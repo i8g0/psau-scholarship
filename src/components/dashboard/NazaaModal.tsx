@@ -10,6 +10,7 @@ export default function NazaaModal({ show, onDismiss }: { show: boolean; onDismi
         background: "var(--bg-overlay)",
         WebkitOverflowScrolling: "touch",
         overflowX: "hidden",
+        overscrollBehavior: "contain",
       }}
       role="dialog"
       aria-modal="true"

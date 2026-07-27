@@ -113,7 +113,7 @@ export function SearchableSelect({
       >
         <span className="flex items-center gap-2 truncate pr-8">
           {Icon && <Icon className="w-4 h-4 flex-shrink-0 opacity-50" />}
-          <span className="truncate">{value || placeholder}</span>
+          <span className="truncate min-w-0">{value || placeholder}</span>
         </span>
         <ChevronDown
           className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 opacity-50 ${open ? "rotate-180" : ""}`}
@@ -121,8 +121,7 @@ export function SearchableSelect({
       </button>
       {open && (
         <div
-          className={`dropdown-menu absolute z-[60] w-full animate-fade-in-scale ${dropUp ? "bottom-full mb-1.5" : "top-full mt-1.5"}`}
-          style={{ minWidth: "200px" }}
+          className={`dropdown-menu absolute z-[60] right-0 ${dropUp ? "bottom-full mb-1.5" : "top-full mt-1.5"}`}
           role="listbox"
           id={listId}
         >
@@ -160,37 +159,35 @@ export function SearchableSelect({
               </button>
             )}
           </div>
-          <div className="max-h-60 overflow-y-auto">
+          <button
+            onClick={() => selectIndex(0)}
+            role="option"
+            aria-selected={value === ""}
+            className={`dropdown-item w-full text-right ${highlighted === 0 ? "highlighted" : ""}`}
+            style={{ touchAction: "manipulation", color: "var(--text-muted)" }}
+          >
+            الكل
+          </button>
+          {filtered.map((opt, idx) => (
             <button
-              onClick={() => selectIndex(0)}
+              key={opt}
+              onClick={() => selectIndex(idx + 1)}
               role="option"
-              aria-selected={value === ""}
-              className={`dropdown-item w-full text-right ${highlighted === 0 ? "highlighted" : ""}`}
-              style={{ touchAction: "manipulation", color: "var(--text-muted)" }}
+              aria-selected={value === opt}
+              className={`dropdown-item w-full text-right ${value === opt ? "selected" : ""} ${highlighted === idx + 1 ? "highlighted" : ""}`}
+              style={{ touchAction: "manipulation" }}
             >
-              الكل
+              <span className="whitespace-nowrap min-w-0">{opt}</span>
+              {counts && counts[opt] !== undefined && (
+                <span className="count">{counts[opt]}</span>
+              )}
             </button>
-            {filtered.map((opt, idx) => (
-              <button
-                key={opt}
-                onClick={() => selectIndex(idx + 1)}
-                role="option"
-                aria-selected={value === opt}
-                className={`dropdown-item w-full text-right ${value === opt ? "selected" : ""} ${highlighted === idx + 1 ? "highlighted" : ""}`}
-                style={{ touchAction: "manipulation" }}
-              >
-                <span className="truncate">{opt}</span>
-                {counts && counts[opt] !== undefined && (
-                  <span className="count">{counts[opt]}</span>
-                )}
-              </button>
-            ))}
-            {filtered.length === 0 && (
-              <div className="px-3 py-4 text-center text-sm" style={{ color: "var(--text-muted)" }}>
-                لا توجد نتائج
-              </div>
-            )}
-          </div>
+          ))}
+          {filtered.length === 0 && (
+            <div className="px-3 py-4 text-center text-sm" style={{ color: "var(--text-muted)" }}>
+              لا توجد نتائج
+            </div>
+          )}
         </div>
       )}
     </div>

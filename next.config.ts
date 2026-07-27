@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV === "development";
 
+const allowedDevOrigins = process.env.ALLOWED_DEV_ORIGINS
+  ? process.env.ALLOWED_DEV_ORIGINS.split(",").map((s) => s.trim())
+  : undefined;
+
 const csp = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
@@ -16,6 +20,7 @@ const csp = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  allowedDevOrigins,
   async headers() {
     return [
       {

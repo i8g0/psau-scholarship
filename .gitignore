@@ -15,6 +15,7 @@ node_modules/
 .env.production
 .env.staging
 export.csv
+testing_data/
 
 # Sensitive data files - NEVER commit these
 src/data/scores-26.json

@@ -156,7 +156,6 @@
    ========================================== */
 html {
   scroll-behavior: smooth;
-  overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
 }
 
@@ -734,7 +733,9 @@ body {
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   max-height: 260px;
+  max-width: calc(100vw - 32px);
   overflow-y: auto;
+  overflow-x: auto;
 }
 
 .dropdown-item {

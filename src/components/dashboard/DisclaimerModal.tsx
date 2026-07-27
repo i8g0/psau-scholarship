@@ -17,6 +17,7 @@ export default function DisclaimerModal({ show, onDismiss }: DisclaimerModalProp
         background: "var(--bg-overlay)",
         WebkitOverflowScrolling: "touch",
         overflowX: "hidden",
+        overscrollBehavior: "contain",
       }}
       role="dialog"
       aria-modal="true"
