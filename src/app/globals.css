@@ -156,6 +156,7 @@
    ========================================== */
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -732,7 +733,9 @@ body {
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   max-height: 260px;
+  max-width: calc(100vw - 32px);
   overflow-y: auto;
+  overflow-x: auto;
 }
 
 .dropdown-item {
@@ -807,6 +810,31 @@ a:focus-visible {
   .table-container th,
   .table-container td {
     padding: 10px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card,
+  .card-elevated {
+    padding: 12px;
+    border-radius: var(--radius-md);
+  }
+
+  .mobile-card {
+    padding: 12px;
+  }
+
+  .table-container th,
+  .table-container td {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+
+  .table-container td.score-low,
+  .table-container td.score-avg,
+  .table-container td.score-high {
+    width: 60px;
+    min-width: 60px;
   }
 }
 

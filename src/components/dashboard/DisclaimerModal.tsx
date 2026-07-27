@@ -12,16 +12,18 @@ export default function DisclaimerModal({ show, onDismiss }: DisclaimerModalProp
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
       style={{
         background: "var(--bg-overlay)",
         WebkitOverflowScrolling: "touch",
+        overflowX: "hidden",
+        overscrollBehavior: "contain",
       }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="disclaimer-title"
     >
-      <div className="card-elevated max-w-lg w-full p-6 sm:p-8 space-y-5 max-h-[90vh] overflow-y-auto my-auto animate-fade-in-scale">
+      <div className="card-elevated max-w-lg w-full p-5 sm:p-8 space-y-5 max-h-[90vh] overflow-y-auto my-auto animate-fade-in-scale">
         <div className="text-center space-y-2">
           <div className="flex items-center justify-between mb-4">
             <Image
@@ -76,6 +78,38 @@ export default function DisclaimerModal({ show, onDismiss }: DisclaimerModalProp
               <li>عدم وجود تخصص معين في جامعة معينة لا يعني أنه محذوف، بل عدم توفر معلومات عنه <strong style={{ color: "var(--accent-gold)" }}> (يستثنى من ذلك التخصصات الصحية فهي ممنوعة)</strong>.</li>
               <li>تختلف الدرجات والموزونات من عامٍ إلى الآخر، والأرقام المعروضة في هذا الموقع لا تتجاوز كونها إحصاء لما تم جمعه سابقًا.</li>
             </ul>
+          </div>
+
+          <div
+            className="p-4 rounded-xl space-y-3"
+            style={{
+              background: "rgba(59, 130, 246, 0.06)",
+              border: "1px solid rgba(59, 130, 246, 0.2)",
+            }}
+          >
+            <p className="font-bold" style={{ color: "#3b82f6" }}>📝 استبيان الطلاب المقبولين</p>
+            <ul className="list-disc pr-5 space-y-2">
+              <li>
+                إذا كنت من الطلاب المقبولين في جامعة الأمير سطام ولم تقم بتعبئة الاستبيان بعد،
+                نرجو منك تعبئته من خلال الرابط أدناه:
+              </li>
+            </ul>
+            <div className="text-center pt-2">
+              <a
+                href={process.env.NEXT_PUBLIC_DISCLAIMER_FORM_URL || "https://forms.gle/nvRGFGxC611WHja1A"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block py-3 px-6 rounded-xl font-bold text-base transition-all duration-200 min-h-[44px]"
+                style={{
+                  background: "var(--olive-600)",
+                  color: "#ffffff",
+                  boxShadow: "0 4px 18px rgba(16, 185, 129, 0.35)",
+                  touchAction: "manipulation",
+                }}
+              >
+                رابط الاستبيان ←
+              </a>
+            </div>
           </div>
 
           <div

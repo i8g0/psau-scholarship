@@ -146,7 +146,7 @@ export default function FilterBar({
         )}
       </div>
 
-      <div className={`card p-4 relative z-20 ${showFilters ? "block" : "hidden md:block"}`}>
+      <div className={`card p-4 relative z-20 min-w-0 ${showFilters ? "block" : "hidden md:block"}`}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
           {showCampusFilter && (
             <div>

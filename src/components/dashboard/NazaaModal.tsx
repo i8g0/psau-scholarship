@@ -5,16 +5,18 @@ export default function NazaaModal({ show, onDismiss }: { show: boolean; onDismi
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
       style={{
         background: "var(--bg-overlay)",
         WebkitOverflowScrolling: "touch",
+        overflowX: "hidden",
+        overscrollBehavior: "contain",
       }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="nazaa-title"
     >
-      <div className="card-elevated max-w-lg w-full p-6 sm:p-8 space-y-5 max-h-[90vh] overflow-y-auto my-auto animate-fade-in-scale">
+      <div className="card-elevated max-w-lg w-full p-5 sm:p-8 space-y-5 max-h-[90vh] overflow-y-auto my-auto animate-fade-in-scale">
         <h2
           id="nazaa-title"
           className="text-xl font-bold text-center"
