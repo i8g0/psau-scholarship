@@ -27,7 +27,7 @@ export default function NazaaModal({ show, onDismiss }: { show: boolean; onDismi
 
         <div className="space-y-4 text-sm leading-relaxed text-right" style={{ color: "var(--text-secondary)" }}>
           <p>
-            نظرًا للتفوات الملحوظ الذي وجدناه في موزونات دفعة 2025، قررنا حينها اعتماد دالة أطلقنا عليها <strong style={{ color: "var(--accent-gold, #d97706)" }}>&quot;مقياس النزعة&quot;</strong> لتكون الدالة الأساسية لقياس النزعة المركزية في تجميع الموزونات.
+            نظرًا للتفاوت الملحوظ الذي وجدناه في موزونات دفعة 2025، قررنا حينها اعتماد دالة أطلقنا عليها <strong style={{ color: "var(--accent-gold, #d97706)" }}>&quot;مقياس النزعة&quot;</strong> لتكون الدالة الأساسية لقياس النزعة المركزية في تجميع الموزونات.
           </p>
 
           <p>
